@@ -1,0 +1,13 @@
+apply plugin: 'base'
+
+repositories {
+ flatDir {
+    dirs '../libs'
+ }
+}
+
+task installJars(type: Copy) {
+	dependsOn assemble
+  from subprojects.collect { it.tasks.withType(Jar) }
+  into "../libs"
+}
