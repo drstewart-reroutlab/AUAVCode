@@ -1,12 +1,17 @@
-package org.reroutlab.code.auav.drivers.ExternalCommandsDriver;
+package org.reroutlab.code.auav.drivers;
 
-import java.util.HashMap;
+import java.util.*;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.lang.System.*;
 import org.reroutlab.code.auav.interfaces.*;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+
 
 /**
  * org.reroutlab.code.ExternalCommands is an AUAV service.
@@ -20,6 +25,14 @@ import org.reroutlab.code.auav.interfaces.*;
  */
 
 public class ExternalCommandsDriver implements Runnable,org.reroutlab.code.auav.interfaces.AuavDrivers {
+		private int ECD_PORT = 5117;
+
+    private static Logger ecdLogger =
+				Logger.getLogger(ExternalCommandsDriver.class.getName());
+		public void setLogLevel(Level l) {
+				ecdLogger.setLevel(l);
+		}		
+		
 		private ServerSocket serverSocket;
 		public int getLocalPort() {
 				if (serverSocket == null) {
@@ -33,46 +46,83 @@ public class ExternalCommandsDriver implements Runnable,org.reroutlab.code.auav.
 				return usageInfo;
 		}
 
+		
+
 		private HashMap driver2port;  // key=drivername value={port,usageInfo}
-		public void setDriverMap(HashMap m) {
+		public void setDriverMap(HashMap<String, String> m) {
 				if (m != null) {
-						driver2port = m;
+						driver2port = new HashMap<String, String>(m);
 				}
 		}
 
 		
 		public ExternalCommandsDriver() {
-				System.out.println("In Constructor");
+				ecdLogger.log(Level.FINEST, "In Constructor");
 				try {
-						serverSocket = new ServerSocket(0);
+						serverSocket = new ServerSocket(ECD_PORT);
 				} catch (Exception e){
-						System.out.println("Problem: " + e.toString() );
+						ecdLogger.log(Level.WARNING, "Unable to create server socket");
 				}
 				
 		}
 
 		public void run() {
 				BufferedReader bufferedReader;
+				PrintWriter printWriter;
 				while (true) {
 						Socket clientSocket=null;
 						try {
 								clientSocket = serverSocket.accept();
 								bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+								printWriter = new PrintWriter(clientSocket.getOutputStream(),true);
+
 								String inputLine = bufferedReader.readLine();
+								String lastLine = "";
+								if (inputLine.equals("mult")) {
+										do {
+												lastLine = bufferedReader.readLine();
+												inputLine = inputLine + "\n" + lastLine;
+										} while (lastLine.equals("mult") == false);
+								}
+								String outputLine = processCommands(inputLine);
+								printWriter.println(outputLine);
+								clientSocket.close();
 						}
 						catch (Exception e) {
-								System.out.println("Problem: " + e.toString() );
+								ecdLogger.log(Level.WARNING, "Problem: " + e.toString() );
 						}
-						try {
-								clientSocket.close();
-						} catch (Exception e ){}
 				}
 		}
 		
 		public static void main(String[] args) {
 				ExternalCommandsDriver ecd = new ExternalCommandsDriver();
-				System.out.println("LocalPort: " + ecd.getLocalPort() );
+				//System.out.println("LocalPort: " + ecd.getLocalPort() );
 				
+		}
+
+
+		private String processCommands(String inputLine) {
+				// Split on \n then on ' '
+				String outLine = "";
+				String[] cmds = inputLine.split("\n");
+				for (String cmd: cmds) {
+						String[] args = cmd.split(" ");
+						// Format: driver_name driver_cmd [driver_prm=driver_arg]*
+						if (args[0].equals("list")) {
+								Set keys = driver2port.keySet();
+								String output = "";
+								for (Iterator i = keys.iterator(); i.hasNext(); ) {
+										String name = (String) i.next();
+										String value = (String) driver2port.get(name);
+										output = output + name + "-->" + value + "\n";
+								}
+								outLine = outLine + "Active Drivers\n"+output;
+						}
+						else {
+								outLine = outLine+ "Error\n";
+						}
+				}
+				return outLine;
 		}
 }
 

@@ -1,6 +1,6 @@
 apply plugin: 'java'
 
-task auavAssemble(type: Copy, dependsOn:assemble) {
+task installJars(type: Copy, dependsOn:assemble) {
    from "build/libs/interfaces.jar"
    into "../libs"
 }

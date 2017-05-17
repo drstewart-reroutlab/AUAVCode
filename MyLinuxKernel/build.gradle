@@ -1,0 +1,21 @@
+apply plugin: 'java'
+def AUAVHOME = System.getenv('AUAVHOME')
+def AUAVLIBS = System.getenv('AUAVHOME')+"/libs"
+
+repositories {
+   flatDir {
+     dirs "$AUAVLIBS"
+   }
+}
+
+dependencies {
+   compile name: 'interfaces'
+   compile name: 'ExternalCommandsDriver'	
+	 compile fileTree(dir: "$AUAVLIBS", include: ['*.jar'])	 
+	 }
+
+task installJars(type: Copy) {
+	 dependsOn assemble	
+   from "build/libs/MyLinuxKernel.jar"
+   into "$AUAVHOME/kernels"
+}
