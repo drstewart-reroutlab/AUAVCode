@@ -1,2 +1,3 @@
 include "org/reroutlab/code/auav/interfaces"
 include "org/reroutlab/code/auav/drivers/ExternalCommandsDriver"
+include "org/reroutlab/code/auav/drivers/LocationManagerDriver"

@@ -8,7 +8,7 @@ import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.lang.System.*;
-import org.reroutlab.code.auav.interfaces.*;
+//import org.reroutlab.code.auav.interfaces.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
@@ -24,7 +24,7 @@ import java.util.logging.Level;
  * @since   2017-05-01 
  */
 
-public class ExternalCommandsDriver implements Runnable,org.reroutlab.code.auav.interfaces.AuavDrivers {
+public class ExternalCommandsDriver implements Runnable,org.reroutlab.code.auav.drivers.AuavDrivers {
 		private int ECD_PORT = 5117;
 
     private static Logger ecdLogger =
@@ -41,7 +41,7 @@ public class ExternalCommandsDriver implements Runnable,org.reroutlab.code.auav.
 				return serverSocket.getLocalPort();
 		}
 		
-		private String usageInfo="\nCMD param=value param=value param=value\nlist ";
+		private String usageInfo="CMD param=value param=value param=value; list ";
 		public String getUsageInfo() {
 				return usageInfo;
 		}
@@ -84,8 +84,11 @@ public class ExternalCommandsDriver implements Runnable,org.reroutlab.code.auav.
 												inputLine = inputLine + "\n" + lastLine;
 										} while (lastLine.equals("mult") == false);
 								}
-								String outputLine = processCommands(inputLine);
-								printWriter.println(outputLine);
+								if (inputLine != null) {
+										inputLine = inputLine.trim();
+										String outputLine = processCommands(inputLine);
+										printWriter.println(outputLine);
+								}
 								clientSocket.close();
 						}
 						catch (Exception e) {
@@ -118,11 +121,37 @@ public class ExternalCommandsDriver implements Runnable,org.reroutlab.code.auav.
 								}
 								outLine = outLine + "Active Drivers\n"+output;
 						}
+						else if (driver2port.containsKey(args[0]) )  {
+								String c = "";
+								for (int i=1; i < args.length;i++) {
+										c = c + args[i] + " ";
+								}
+								c = c.trim();
+								ecdLogger.log(Level.WARNING, "Send the cmd: " + c );
+								outLine = outLine + sendTo((String)driver2port.get(args[0]), c);
+						}
 						else {
 								outLine = outLine+ "Error\n";
 						}
 				}
 				return outLine;
+		}
+
+		private String sendTo(String p, String c) {
+				String[] portInfo = p.split(":");
+				try {
+						Socket echoSocket = new Socket("127.0.0.1", Integer.parseInt(portInfo[1].trim()) );
+						PrintWriter out = new PrintWriter(echoSocket.getOutputStream(), true);
+						BufferedReader in = new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
+						out.println(c);
+						String retVal = in.readLine();
+						echoSocket.close();
+						return(retVal);
+				}
+				catch(Exception e) {
+								ecdLogger.log(Level.WARNING, "Unable to sendTo : " + p +"  " + e.toString() );
+				}
+				return("Error in sendTo prevented communication");
 		}
 }
 

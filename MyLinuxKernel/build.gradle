@@ -9,9 +9,8 @@ repositories {
 }
 
 dependencies {
-   compile name: 'interfaces'
-   compile name: 'ExternalCommandsDriver'	
-	 compile fileTree(dir: "$AUAVLIBS", include: ['*.jar'])	 
+	 compile fileTree(dir: "$AUAVLIBS", include: '*.jar')
+	 compile fileTree(dir: "$AUAVHOME/apps", include: '*.jar')	 	 
 	 }
 
 task installJars(type: Copy) {
