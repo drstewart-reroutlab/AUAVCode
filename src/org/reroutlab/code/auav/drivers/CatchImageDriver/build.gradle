@@ -1,0 +1,18 @@
+apply plugin: 'java'
+def AUAVHOME = System.getenv('AUAVHOME')
+
+repositories {
+   flatDir {
+     dirs "$AUAVHOME/libs"
+   }
+}
+
+dependencies {
+   compile name: 'interfaces'
+	 }
+
+jar {
+  manifest {
+    attributes 'Main-Class': 'org.reroutlab.code.auav.drivers.LocationManagerDriver'
+  }
+}
