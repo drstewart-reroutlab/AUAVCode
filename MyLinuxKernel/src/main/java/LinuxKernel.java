@@ -3,6 +3,8 @@ package org.reroutlab.code.auav.kernels;
 import org.reroutlab.code.auav.drivers.ExternalCommandsDriver;
 import org.reroutlab.code.auav.drivers.LocationManagerDriver;
 import org.reroutlab.code.auav.drivers.CatchImageDriver;
+import org.reroutlab.code.auav.drivers.CaptureImageDriver;
+import org.reroutlab.code.auav.drivers.ChargingBatteryDriver;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
@@ -30,6 +32,8 @@ public class LinuxKernel {
 				ExternalCommandsDriver ecd = new ExternalCommandsDriver();
 				LocationManagerDriver lm = new LocationManagerDriver();
 				CatchImageDriver cid = new CatchImageDriver();
+				CaptureImageDriver cids = new CaptureImageDriver();
+				ChargingBatteryDriver cb = new ChargingBatteryDriver();
 				
 				// Gather name to ports/usage mapping
 				theLogger.log(Level.FINE,"Creating driver-to-port mapping");				
@@ -39,17 +43,23 @@ public class LinuxKernel {
 								new String("Port:"+lm.getLocalPort()+"\n" ) );
 				n2p.put(cid.getClass().getCanonicalName(),
 								new String("Port:"+cid.getLocalPort()+"\n" ) );
-
+				n2p.put(cids.getClass().getCanonicalName(),
+								new String("Port:"+cids.getLocalPort()+"\n" ) );
+				n2p.put(cb.getClass().getCanonicalName(),
+								new String("Port:"+cb.getLocalPort()+"\n" ) );
 				
 
 				// Send the map back to each object
 				ecd.setDriverMap(n2p);
 				lm.setDriverMap(n2p);
-				cid.setDriverMap(n2p);				
+				cid.setDriverMap(n2p);
+				cids.setDriverMap(n2p);
+				cb.setDriverMap(n2p);				
 				ecd.setLogLevel(AUAVLEVEL);
 				lm.setLogLevel(AUAVLEVEL);
 				cid.setLogLevel(AUAVLEVEL);
-
+				cids.setLogLevel(AUAVLEVEL);
+				cb.setLogLevel(AUAVLEVEL);
 
 				// Printing the map object locally for logging
 				String mapAsString = "Active Drivers\n";
@@ -69,6 +79,10 @@ public class LinuxKernel {
 				lmT.start();
 				Thread cidT = new Thread(cid);
 				cidT.start();
+				Thread cidsT = new Thread(cids);
+				cidsT.start();
+				Thread cbT = new Thread(cb);
+				cbT.start();
 				
 				
 		}

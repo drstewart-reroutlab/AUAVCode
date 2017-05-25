@@ -24,12 +24,16 @@ import java.util.logging.Level;
  * @since   2017-05-01 
  */
 
+// LocationManagerDriver contains the code for behavior specified in the AUAVDrivers, plus this thread is accessible globally
 public class LocationManagerDriver implements Runnable,org.reroutlab.code.auav.drivers.AuavDrivers {
+
+// Initializing the variables, used only in this module, no public access (outside of the method)
 		private int LM_PORT = 0;
 		private float X = 0;
 		private float Y = 0;
 		private float Z = 0;
 
+// Main program: creating the new thread & new Location Manager Driver plus a thread to start the whole program
 		public static void main(String[] args) {
 				LocationManagerDriver lm = new LocationManagerDriver();
 				//System.out.println("LocalPort: " + lm.getLocalPort() );
@@ -38,13 +42,15 @@ public class LocationManagerDriver implements Runnable,org.reroutlab.code.auav.d
 				
 		}
 
-		
+// Return the name of the entity represented by the entity represented by the class object
+// Get the logger object & set the level of the logger		
     private static Logger lmLogger =
 				Logger.getLogger(LocationManagerDriver.class.getName());
 		public void setLogLevel(Level l) {
 				lmLogger.setLevel(l);
 		}		
-		
+
+// Declare the server socket and check the existence of the local port. If non-existence, returning -1, else returning the local port of server sockets.	
 		private ServerSocket serverSocket;
 		public int getLocalPort() {
 				if (serverSocket == null) {
@@ -52,14 +58,15 @@ public class LocationManagerDriver implements Runnable,org.reroutlab.code.auav.d
 				}
 				return serverSocket.getLocalPort();
 		}
-		
+
+// Instructing the users the necessary commands to get the Usage Info.		
 		private String usageInfo=";gotoXYZ X=## Y=## Z=##; getLocation; ";
 		public String getUsageInfo() {
 				return usageInfo;
 		}
 
 		
-
+// The HashMap is set to control the drivers and the associated information with that driver. If no existence HashMap, it will be created;
 		private HashMap driver2port;  // key=drivername value={port,usageInfo}
 		public void setDriverMap(HashMap<String, String> m) {
 				if (m != null) {
@@ -67,7 +74,7 @@ public class LocationManagerDriver implements Runnable,org.reroutlab.code.auav.d
 				}
 		}
 
-		
+// Try & catch pair here is going to generate a server socket (Local Port detection) and see if there is an exception (i.e. unable to generate the server socket), 
 		public LocationManagerDriver() {
 				lmLogger.log(Level.FINEST, "In Constructor");
 				try {
@@ -79,6 +86,7 @@ public class LocationManagerDriver implements Runnable,org.reroutlab.code.auav.d
 				
 		}
 
+// This one keep running based on the input of the user.
 		public void run() {
 				BufferedReader bufferedReader;
 				PrintWriter printWriter;
@@ -104,6 +112,8 @@ public class LocationManagerDriver implements Runnable,org.reroutlab.code.auav.d
 		}
 		
 
+// This function processes the commands from the user. Think about it like a mini web server when a request is sent and a result is expected to turn back.
+// Additionally, this one is used to process the input and output stream.
 		private String processCommands(String inputLine) {
 				// Split on \n then on ' '
 				String outLine = "";

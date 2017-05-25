@@ -13,6 +13,6 @@ dependencies {
 
 jar {
   manifest {
-    attributes 'Main-Class': 'org.reroutlab.code.auav.drivers.LocationManagerDriver'
+    attributes 'Main-Class': 'org.reroutlab.code.auav.drivers.ChargingBatteryDriver'
   }
 }
