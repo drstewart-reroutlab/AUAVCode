@@ -1,4 +1,5 @@
 apply plugin: 'java'
+jar.baseName = 'org.reroutlab.code.auav.drivers.ExternalCommandsDriver'
 
 repositories {
    flatDir {
