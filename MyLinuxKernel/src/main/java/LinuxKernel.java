@@ -9,6 +9,9 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 
 /**
  *
@@ -25,9 +28,25 @@ public class LinuxKernel {
 		HashMap n2p = new HashMap<String, String>(); 
 
 		public LinuxKernel ()  {//setup constructor 
+				//				:/home/cstewart/reroutlab.code/reroutlab.cstewart.code.auav/libs/CaptureImageDriver.jar:/home/cstewart/reroutlab.code/reroutlab.cstewart.code.auav/libs/ChargingBatteryDriver.jar:
+
+				
 				String jarList = System.getProperty("java.class.path");
-				System.out.println("Jars:" + jarList);
-						
+				String[] fullPath = jarList.split(".jar:");
+				String[] jarNames = new String[fullPath.length];
+				int countDrivers = 0;
+				for (int x =0; x < fullPath.length;x++){
+						String[] seps = fullPath[x].split("/");
+						if (seps[seps.length - 1].endsWith("Driver") == true) {
+								jarNames[countDrivers] = seps[seps.length - 1];
+								countDrivers++;						
+						}
+				}
+
+				for (int x = 0; x < countDrivers; x++) {
+						System.out.println("Jar: " + jarNames[x]);
+				}
+				
 				theLogger.setLevel(AUAVLEVEL); //set logger's level
 
 				// Create new driver objects
