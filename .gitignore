@@ -11,6 +11,8 @@ gen/
 build/
 libs/*jar
 apps/*jar
+kernels/*jar
+kernels/*apk
 
 # local configuration file (for Android sdk path, etc)
 local.properties

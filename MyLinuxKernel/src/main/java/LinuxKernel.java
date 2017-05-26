@@ -25,6 +25,9 @@ public class LinuxKernel {
 		HashMap n2p = new HashMap<String, String>(); 
 
 		public LinuxKernel ()  {//setup constructor 
+				String jarList = System.getProperty("java.class.path");
+				System.out.println("Jars:" + jarList);
+						
 				theLogger.setLevel(AUAVLEVEL); //set logger's level
 
 				// Create new driver objects
