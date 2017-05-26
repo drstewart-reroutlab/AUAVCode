@@ -1,5 +1,4 @@
 # Android built artifacts
-*.apk
 *.ap_
 *.dex
 
@@ -10,6 +9,8 @@
 bin/
 gen/
 build/
+libs/*jar
+apps/*jar
 
 # local configuration file (for Android sdk path, etc)
 local.properties
@@ -20,11 +21,6 @@ local.properties
 # Eclipse project files
 .classpath
 .project
-
-# Android Studio
-*.iml
-.idea
-.gradle
 
 
 #NDK
