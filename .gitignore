@@ -5,6 +5,9 @@
 # Java build artifacts class files
 *.class
 
+# Californium
+californium/
+
 # other generated files
 bin/
 gen/
