@@ -1,19 +1,18 @@
 apply plugin: 'java'
-jar.baseName = 'org.reroutlab.code.auav.drivers.CaptureImageDriver'
+jar.baseName = 'org.reroutlab.code.auav.drivers.ExternalCommandsDriver'
 def AUAVHOME = System.getenv('AUAVHOME')
 
-repositories {
-   flatDir {
-     dirs "$AUAVHOME/libs"
-   }
+
+dependencies {
+   compile fileTree(dir: "$AUAVHOME/libs", include: ['*.jar'])
+}
+dependencies {
+   compile fileTree(dir: "$AUAVHOME/external/", include: ['*.jar'])
+}
+dependencies {
+   compile fileTree(dir: "$AUAVHOME/apps/", include: ['*.jar'])
 }
 
 dependencies {
    compile name: 'interfaces'
 	 }
-
-jar {
-  manifest {
-    attributes 'Main-Class': 'org.reroutlab.code.auav.drivers.CaptureImageDriver'
-  }
-}
