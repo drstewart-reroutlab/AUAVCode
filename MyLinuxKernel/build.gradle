@@ -1,16 +1,22 @@
 apply plugin: 'java'
 def AUAVHOME = System.getenv('AUAVHOME')
-def AUAVLIBS = System.getenv('AUAVHOME')+"/libs"
 
 repositories {
    flatDir {
-     dirs "$AUAVLIBS"
+     dirs "$AUAVHOME/libs"
    }
+   flatDir {
+     dirs "$AUAVHOME/external"
+   }
+   flatDir {
+     dirs "$AUAVHOME/apps"
+   }	 
 }
 
 dependencies {
-	 compile fileTree(dir: "$AUAVLIBS", include: '*.jar')
-	 compile fileTree(dir: "$AUAVHOME/apps", include: '*.jar')	 	 
+	 compile fileTree(dir: "$AUAVHOME/libs/", include: '*.jar')
+	 compile fileTree(dir: "$AUAVHOME/external/", include: '*.jar')	 
+	 compile fileTree(dir: "$AUAVHOME/apps/", include: '*.jar')	 	 
 	 }
 
 task installJars(type: Copy) {

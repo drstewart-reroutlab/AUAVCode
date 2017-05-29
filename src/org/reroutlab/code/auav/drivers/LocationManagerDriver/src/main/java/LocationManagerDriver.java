@@ -1,140 +1,184 @@
 package org.reroutlab.code.auav.drivers;
 
 import java.util.*;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.OutputStreamWriter;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.lang.System.*;
 //import org.reroutlab.code.auav.interfaces.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.net.InetSocketAddress;
+import java.net.SocketException;
+
+import org.eclipse.californium.core.CoapResource;
+import org.eclipse.californium.core.CoapClient;
+import org.eclipse.californium.core.CoapResponse;
+import org.eclipse.californium.core.CoapServer;
+import org.eclipse.californium.core.network.CoapEndpoint;
+import org.eclipse.californium.core.network.EndpointManager;
+import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.core.server.resources.CoapExchange;
+
 
 
 /**
- * org.reroutlab.code.auav.drivers.LocationManagerDriver is an AUAV service.
- * gotoXYZ and getLocation are the only supported commands
- * 
- * 
+ * org.reroutlab.code.auav.drivers.ExternalCommandsDriver is an AUAV service.
+ * The service accepts commands that could go to *any* module.
+ * It also supports a "list" command that tells of all available modules.
+ * It also supports a "help" command that explains syntax.
  *
  * @author  Christopher Stewart
  * @version 0.01
  * @since   2017-05-01 
  */
 
-// LocationManagerDriver contains the code for behavior specified in the AUAVDrivers, plus this thread is accessible globally
-public class LocationManagerDriver implements Runnable,org.reroutlab.code.auav.drivers.AuavDrivers {
-
-// Initializing the variables, used only in this module, no public access (outside of the method)
-		private int LM_PORT = 0;
+public class LocationManagerDriver implements org.reroutlab.code.auav.drivers.AuavDrivers {
+		// Initializing the variables, used only in this module, no public access (outside of the method)
 		private float X = 0;
 		private float Y = 0;
 		private float Z = 0;
-
-// Main program: creating the new thread & new Location Manager Driver plus a thread to start the whole program
+		
+		private CoapServer cs;
+		public CoapServer getCoapServer() {
+				return (cs);
+		}
 		public static void main(String[] args) {
-				LocationManagerDriver lm = new LocationManagerDriver();
-				//System.out.println("LocalPort: " + lm.getLocalPort() );
-				Thread lmT = new Thread(lm);
-				lmT.start();
+				try { 
+						LocationManagerDriver lmd = new LocationManagerDriver();
+						lmd.getCoapServer().start();
+				}
+				catch (Exception e) {
+						lmdLogger.log(Level.WARNING, "Unable to start server" + e.getMessage());
+				}
 				
 		}
 
-// Return the name of the entity represented by the entity represented by the class object
-// Get the logger object & set the level of the logger		
-    private static Logger lmLogger =
-				Logger.getLogger(LocationManagerDriver.class.getName());
+
+
+
+		//implement allows to use Thread
+		//indicate port number
+		private static int LISTEN_PORT = 0;
+		private int driverPort = 0;
+		
+    private static Logger lmdLogger =
+				Logger.getLogger(LocationManagerDriver.class.getName());//return the name of the entity represented by this class object
+    				//get Logger object by calling getLogger receive the name of the ExternalCommandDriver.class'name
+		/**
+		 *
+		 *
+		 * This specifying which message levels will be logged by this logger
+		 *
+		 */
 		public void setLogLevel(Level l) {
-				lmLogger.setLevel(l);
-		}		
-
-// Declare the server socket and check the existence of the local port. If non-existence, returning -1, else returning the local port of server sockets.	
-		private ServerSocket serverSocket;
+				lmdLogger.setLevel(l);
+						}		
+		
+		/**
+		 *
+		 * This function just to check if serverSocket is null, set the local port number in to -1
+		 * 
+		 * @return local port number
+		 *
+		 */
 		public int getLocalPort() {
-				if (serverSocket == null) {
-						return -1;
-				}
-				return serverSocket.getLocalPort();
+						return driverPort;
 		}
+		
+		private String usageInfo="CMD param=value param=value param=value; list ";
 
-// Instructing the users the necessary commands to get the Usage Info.		
-		private String usageInfo=";gotoXYZ X=## Y=## Z=##; getLocation; ";
+		/**
+		 *
+		 * This function return the design string to respond to call
+		 *
+		 *
+		 * @return usageInfo 
+		 *
+		 */
 		public String getUsageInfo() {
 				return usageInfo;
 		}
 
 		
-// The HashMap is set to control the drivers and the associated information with that driver. If no existence HashMap, it will be created;
+
 		private HashMap driver2port;  // key=drivername value={port,usageInfo}
+
+		/**
+		 *
+		 * This function help construct Map
+		 *
+		 * @param HashMap<String, String> m
+		 *
+		 */
 		public void setDriverMap(HashMap<String, String> m) {
 				if (m != null) {
 						driver2port = new HashMap<String, String>(m);
 				}
 		}
 
-// Try & catch pair here is going to generate a server socket (Local Port detection) and see if there is an exception (i.e. unable to generate the server socket), 
-		public LocationManagerDriver() {
-				lmLogger.log(Level.FINEST, "In Constructor");
-				try {
-						serverSocket = new ServerSocket(LM_PORT);
-						System.out.println(getLocalPort());
-				} catch (Exception e){
-						lmLogger.log(Level.WARNING, "Unable to create server socket");
-				}
+		
+		public LocationManagerDriver() throws Exception {
+				lmdLogger.log(Level.FINEST, "In Constructor");
+				cs = new CoapServer();
+				InetSocketAddress bindToAddress = new InetSocketAddress("localhost", LISTEN_PORT);
+				CoapEndpoint tmp = new CoapEndpoint(bindToAddress);
+				cs.addEndpoint(tmp);				
+				tmp.start();
+				driverPort = tmp.getAddress().getPort();
+				
+				cs.add(new lmdResource());
 				
 		}
 
-// This one keep running based on the input of the user.
-		public void run() {
-				BufferedReader bufferedReader;
-				PrintWriter printWriter;
-				while (true) {
-						Socket clientSocket=null;
-						try {
-								clientSocket = serverSocket.accept();
-								bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-								printWriter = new PrintWriter(clientSocket.getOutputStream(),true);
-
-								String inputLine = bufferedReader.readLine();
-								if (inputLine != null) {
-										inputLine = inputLine.trim();
-										String outputLine = processCommands(inputLine);
-										printWriter.println(outputLine);
-								}
-								clientSocket.close();
-						}
-						catch (Exception e) {
-								lmLogger.log(Level.WARNING, "Problem: " + e.toString() );
-						}
+		private class lmdResource extends CoapResource {
+				public lmdResource() {
+						super("cr");
+						getAttributes().setTitle("cr");
 				}
-		}
-		
-
-// This function processes the commands from the user. Think about it like a mini web server when a request is sent and a result is expected to turn back.
-// Additionally, this one is used to process the input and output stream.
-		private String processCommands(String inputLine) {
-				// Split on \n then on ' '
-				String outLine = "";
-				String[] args = inputLine.split(" ");
-						if (args[0].equals("help")) {
-								return(getUsageInfo());
+				/**
+				 *
+				 * This function process the input commands, if the there is list, append to 
+				 * the string, if not call sendTo methond find out the matching information
+				 *
+				 * @return information in the list
+				 *
+				 *
+				 */
+				@Override
+				public void handlePUT(CoapExchange ce) {
+						// Split on & and = then on ' '
+						byte[] payload = ce.getRequestPayload();
+						String inputLine = "";
+						try {
+								inputLine  = new String(payload, "UTF-8");
 						}
-						else if (args[0].equals("gotoXYZ")) {
+						catch ( Exception uee) {
+								System.out.println(uee.getMessage());
+						}
+						System.out.println("\n InputLine: "+inputLine);
+
+						String outLine = "";
+						String[] args = inputLine.split("-");
+						
+						// Format: dc=driver_cmd [driver_prm=driver_arg]*						
+						if (args[0].equals("dc=help")) {
+								ce.respond(getUsageInfo());
+						}
+						else if (args[0].equals("dc=gotoXYZ")) {
 								X = Float.parseFloat(args[1].substring(2));
 								Y = Float.parseFloat(args[2].substring(2));
 								Z = Float.parseFloat(args[3].substring(2));
-								return ("OK");
+								ce.respond ("OK");
 						}
-						else if (args[0].equals("getLocation")) {
-								return ("X="+ String.format("%.2f",X) +
+						else if (args[0].equals("dc=getLocation")) {
+								ce.respond ("X="+ String.format("%.2f",X) +
 												"Y="+ String.format("%.2f",Y) +
 												"Z="+ String.format("%.2f",Z) );
 						}
 						else {
-								return("Error: LocationManagerDriver unknown command\n");
+								ce.respond("Error: LocationManagerDriver unknown command\n");
 						}
+						
+						
+				}
 		}
 
 }

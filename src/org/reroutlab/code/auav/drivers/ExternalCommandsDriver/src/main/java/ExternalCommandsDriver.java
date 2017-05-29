@@ -1,20 +1,24 @@
 package org.reroutlab.code.auav.drivers;
 
 import java.util.*;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.OutputStreamWriter;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.lang.System.*;
 //import org.reroutlab.code.auav.interfaces.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.net.InetSocketAddress;
+import java.net.SocketException;
 
+import org.eclipse.californium.core.CoapResource;
+import org.eclipse.californium.core.CoapClient;
+import org.eclipse.californium.core.CoapResponse;
+import org.eclipse.californium.core.CoapServer;
+import org.eclipse.californium.core.network.CoapEndpoint;
+import org.eclipse.californium.core.network.EndpointManager;
+import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.core.server.resources.CoapExchange;
 
 /**
- * org.reroutlab.code.ExternalCommands is an AUAV service.
+ * org.reroutlab.code.auav.drivers.ExternalCommandsDriver is an AUAV service.
  * The service accepts commands that could go to *any* module.
  * It also supports a "list" command that tells of all available modules.
  * It also supports a "help" command that explains syntax.
@@ -24,10 +28,30 @@ import java.util.logging.Level;
  * @since   2017-05-01 
  */
 
-public class ExternalCommandsDriver implements Runnable,org.reroutlab.code.auav.drivers.AuavDrivers { //implement allows to use Thread
-		//indicate port number
-		private int ECD_PORT = 5117;
+public class ExternalCommandsDriver implements org.reroutlab.code.auav.drivers.AuavDrivers {
+		private CoapServer cs;
+		public CoapServer getCoapServer() {
+				return (cs);
+		}
+		public static void main(String[] args) {
+				try { 
+						ExternalCommandsDriver ecd = new ExternalCommandsDriver();
+						ecd.getCoapServer().start();
+				}
+				catch (Exception e) {
+						ecdLogger.log(Level.WARNING, "Unable to start server" + e.getMessage());
+				}
+				
+		}
 
+
+
+
+		//implement allows to use Thread
+		//indicate port number
+		private static int LISTEN_PORT = 5117;
+		private int driverPort = 0;
+		
     private static Logger ecdLogger =
 				Logger.getLogger(ExternalCommandsDriver.class.getName());//return the name of the entity represented by this class object
     				//get Logger object by calling getLogger receive the name of the ExternalCommandDriver.class'name
@@ -41,7 +65,6 @@ public class ExternalCommandsDriver implements Runnable,org.reroutlab.code.auav.
 				ecdLogger.setLevel(l);
 						}		
 		
-		private ServerSocket serverSocket; //declare a SeverSocket
 		/**
 		 *
 		 * This function just to check if serverSocket is null, set the local port number in to -1
@@ -50,10 +73,7 @@ public class ExternalCommandsDriver implements Runnable,org.reroutlab.code.auav.
 		 *
 		 */
 		public int getLocalPort() {
-				if (serverSocket == null) {
-						return -1;
-				}
-				return serverSocket.getLocalPort();
+						return driverPort;
 		}
 		
 		private String usageInfo="CMD param=value param=value param=value; list ";
@@ -88,127 +108,80 @@ public class ExternalCommandsDriver implements Runnable,org.reroutlab.code.auav.
 		}
 
 		
-		public ExternalCommandsDriver() {
+		public ExternalCommandsDriver() throws SocketException {
 				ecdLogger.log(Level.FINEST, "In Constructor");
-				try {
-						serverSocket = new ServerSocket(ECD_PORT);
-				} catch (Exception e){
-						ecdLogger.log(Level.WARNING, "Unable to create server socket");
-				}
+				cs = new CoapServer();
+				InetSocketAddress bindToAddress = new InetSocketAddress("localhost", LISTEN_PORT);
+				cs.addEndpoint(new CoapEndpoint(bindToAddress));
+				driverPort = bindToAddress.getPort();
+				
+				cs.add(new ecdResource());
 				
 		}
 
-		/**
-		 * This function keep reading string from user
-		 *
-		 */
-
-		public void run() {
-				BufferedReader bufferedReader;
-				PrintWriter printWriter;
-				//decaler BufferedReader and PrintWriter
-				while (true) {
-						Socket clientSocket=null;
+		private class ecdResource extends CoapResource {
+				public ecdResource() {
+						super("cr");
+						getAttributes().setTitle("cr");
+				}
+				/**
+				 *
+				 * This function process the input commands, if the there is list, append to 
+				 * the string, if not call sendTo methond find out the matching information
+				 *
+				 * @return information in the list
+				 *
+				 *
+				 */
+				@Override
+				public void handlePUT(CoapExchange ce) {
+						// Split on & and = then on ' '
+						byte[] payload = ce.getRequestPayload();
+						String inputLine = "";
 						try {
-								clientSocket = serverSocket.accept(); //listen for the connection made for this socket and accept it
-								bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-								printWriter = new PrintWriter(clientSocket.getOutputStream(),true);
-
-								String inputLine = bufferedReader.readLine(); // read input by line
-								String lastLine = ""; 
-								if (inputLine.equals("mult")) {
-									// if the first line is equal to mult get into loop until met another mult
-										do {
-												lastLine = bufferedReader.readLine();
-												inputLine = inputLine + "\n" + lastLine;
-										} while (lastLine.equals("mult") == false);
-								}
-								if (inputLine != null) {
-										inputLine = inputLine.trim(); //return without leading and trailing white spaces
-										String outputLine = processCommands(inputLine);
-										printWriter.println(outputLine);
-								}
-								clientSocket.close(); //close socket
+								inputLine  = new String(payload, "UTF-8");
 						}
-						catch (Exception e) {
-								ecdLogger.log(Level.WARNING, "Problem: " + e.toString() );
+						catch ( Exception uee) {
+								System.out.println(uee.getMessage());
 						}
-				}
-		}
-		
-		public static void main(String[] args) {
-				ExternalCommandsDriver ecd = new ExternalCommandsDriver();
-				//System.out.println("LocalPort: " + ecd.getLocalPort() );
-				
-		}
+						//System.out.println("\n InputLine: "+inputLine);
 
-		/**
-		 *
-		 * This function process the input commands, if the there is list, append to the string, if not call sendTo methond find out the matching information
-		 *
-		 * @return information in the list
-		 *
-		 *
-		 */
-
-
-		private String processCommands(String inputLine) {
-				// Split on \n then on ' '
-				String outLine = "";
-				String[] cmds = inputLine.split("\n");
-				for (String cmd: cmds) {
-						String[] args = cmd.split(" ");
-						// Format: driver_name driver_cmd [driver_prm=driver_arg]*
-						if (args[0].equals("list")) {
-								Set keys = driver2port.keySet(); //HashMap<port, usageInfo>
+						String outLine = "";
+						String[] args = inputLine.split("-");
+						ecdLogger.log(Level.WARNING, "Send the cmd: " + inputLine );									 
+						String driverName = args[0].substring(args[0].indexOf("=")+1,args[0].length());
+						driverName = driverName.trim();
+						// Format: dn=driver_name dc=driver_cmd [driver_prm=driver_arg]*
+						if (driverName.endsWith("list")) {
 								String output = "";
-								for (Iterator i = keys.iterator(); i.hasNext(); ) {
-										String name = (String) i.next();
-										String value = (String) driver2port.get(name);
-										output = output + name + "-->" + value + "\n";
+								if (driver2port != null) {
+										Set keys = driver2port.keySet(); //HashMap<port, usageInfo>
+										for (Iterator i = keys.iterator(); i.hasNext(); ) {
+												String name = (String) i.next();
+												String value = (String) driver2port.get(name);
+												output = output + name + "-->" + value + "\n";
+										}
 								}
 								outLine = outLine + "Active Drivers\n"+output;
+								ce.respond(outLine);
 						}
-						else if (driver2port.containsKey(args[0]) )  {
-								String c = "";
+						else if (driver2port.containsKey(driverName) )  {
+								String[] tmp_port = ((String)driver2port.get(driverName)).split(":");
+								CoapClient client = new CoapClient("coap://127.0.0.1:"+tmp_port[1].trim()+"/cr");
+								String c = "";										
 								for (int i=1; i < args.length;i++) {
-										c = c + args[i] + " ";
+										c = c + args[i] + "-";
 								}
 								c = c.trim();
-								ecdLogger.log(Level.WARNING, "Send the cmd: " + c );
-								outLine = outLine + sendTo((String)driver2port.get(args[0]), c);
+								ecdLogger.log(Level.WARNING, "Send the cmd: " + c );									 
+								CoapResponse response = client.put(c,0);
+								ce.respond(response.getResponseText());
 						}
 						else {
-								outLine = outLine+ "Error\n";
+								ce.respond("Error: Unable to find driver " + inputLine);
 						}
 				}
-				return outLine;
 		}
 
-		/**
-		 *
-		 * This information grab the port number in the command line and return the according input information from matching socket
-		 *
-		 * @return the information from specified port number
-		 *
-		 */
-
-		private String sendTo(String p, String c) {
-				String[] portInfo = p.split(":");
-				try {
-						Socket echoSocket = new Socket("127.0.0.1", Integer.parseInt(portInfo[1].trim()) ); // create the new socket
-						PrintWriter out = new PrintWriter(echoSocket.getOutputStream(), true);
-						BufferedReader in = new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
-						out.println(c);
-						String retVal = in.readLine();
-						echoSocket.close();
-						return(retVal);
-				}
-				catch(Exception e) {
-								ecdLogger.log(Level.WARNING, "Unable to sendTo : " + p +"  " + e.toString() );
-				}
-				return("Error in sendTo prevented communication");
-		}
 }
-
 

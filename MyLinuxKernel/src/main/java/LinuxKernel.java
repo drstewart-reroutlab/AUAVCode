@@ -1,10 +1,6 @@
 package org.reroutlab.code.auav.kernels;
 
-import org.reroutlab.code.auav.drivers.ExternalCommandsDriver;
-import org.reroutlab.code.auav.drivers.LocationManagerDriver;
-import org.reroutlab.code.auav.drivers.CatchImageDriver;
-import org.reroutlab.code.auav.drivers.CaptureImageDriver;
-import org.reroutlab.code.auav.drivers.ChargingBatteryDriver;
+import org.reroutlab.code.auav.drivers.AuavDrivers;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
@@ -20,13 +16,13 @@ import java.util.regex.Pattern;
  *
  */
 public class LinuxKernel {
-		private Level AUAVLEVEL = Level.FINE; // set AUAVLEVEL
+		private Level AUAVLEVEL = Level.FINE; // set AuavLEVEL
 		private static Logger theLogger =
 				Logger.getLogger(LinuxKernel.class.getName());//get Logger object by calling getLogger receive the name of the LinuxKernal.class'name
 
 
 		HashMap n2p = new HashMap<String, String>(); 
-
+		AuavDrivers[] ad = new AuavDrivers[128];
 		public LinuxKernel ()  {//setup constructor 
 				//				:/home/cstewart/reroutlab.code/reroutlab.cstewart.code.auav/libs/CaptureImageDriver.jar:/home/cstewart/reroutlab.code/reroutlab.cstewart.code.auav/libs/ChargingBatteryDriver.jar:
 
@@ -42,46 +38,14 @@ public class LinuxKernel {
 								countDrivers++;						
 						}
 				}
-
-				for (int x = 0; x < countDrivers; x++) {
-						System.out.println("Jar: " + jarNames[x]);
-				}
-				
 				theLogger.setLevel(AUAVLEVEL); //set logger's level
-
-				// Create new driver objects
-				theLogger.log(Level.FINE,"Creating driver objects");
-				ExternalCommandsDriver ecd = new ExternalCommandsDriver();
-				LocationManagerDriver lm = new LocationManagerDriver();
-				CatchImageDriver cid = new CatchImageDriver();
-				CaptureImageDriver cids = new CaptureImageDriver();
-				ChargingBatteryDriver cb = new ChargingBatteryDriver();
 				
-				// Gather name to ports/usage mapping
-				theLogger.log(Level.FINE,"Creating driver-to-port mapping");				
-				n2p.put(ecd.getClass().getCanonicalName(),
-								new String("Port:"+ecd.getLocalPort()+"\n" ) );
-				n2p.put(lm.getClass().getCanonicalName(),
-								new String("Port:"+lm.getLocalPort()+"\n" ) );
-				n2p.put(cid.getClass().getCanonicalName(),
-								new String("Port:"+cid.getLocalPort()+"\n" ) );
-				n2p.put(cids.getClass().getCanonicalName(),
-								new String("Port:"+cids.getLocalPort()+"\n" ) );
-				n2p.put(cb.getClass().getCanonicalName(),
-								new String("Port:"+cb.getLocalPort()+"\n" ) );
-				
-
-				// Send the map back to each object
-				ecd.setDriverMap(n2p);
-				lm.setDriverMap(n2p);
-				cid.setDriverMap(n2p);
-				cids.setDriverMap(n2p);
-				cb.setDriverMap(n2p);				
-				ecd.setLogLevel(AUAVLEVEL);
-				lm.setLogLevel(AUAVLEVEL);
-				cid.setLogLevel(AUAVLEVEL);
-				cids.setLogLevel(AUAVLEVEL);
-				cb.setLogLevel(AUAVLEVEL);
+				for (int x = 0; x < countDrivers; x++) {
+						System.out.println("Jar: "+jarNames[x]);
+						ad[x] = instantiate(jarNames[x],org.reroutlab.code.auav.drivers.AuavDrivers.class);
+						n2p.put(ad[x].getClass().getCanonicalName(),
+										new String("Port:"+ad[x].getLocalPort()+"\n" ) );						
+				}
 
 				// Printing the map object locally for logging
 				String mapAsString = "Active Drivers\n";
@@ -91,26 +55,35 @@ public class LinuxKernel {
 						String value = (String) n2p.get(name);
 						mapAsString = mapAsString + name + " --> " + value + "\n";
 				}
-				theLogger.log(Level.INFO,mapAsString);								
+				theLogger.log(Level.INFO,mapAsString);
 				
-				// Start each thread
-				theLogger.log(Level.FINE,"Activating threads");				
-				Thread ecdT = new Thread(ecd);
-				ecdT.start();//This will call run method automatically
-				Thread lmT = new Thread(lm);
-				lmT.start();
-				Thread cidT = new Thread(cid);
-				cidT.start();
-				Thread cidsT = new Thread(cids);
-				cidsT.start();
-				Thread cbT = new Thread(cb);
-				cbT.start();
+				for (int x = 0; x < countDrivers; x++) {
+						// Send the map back to each object
+						ad[x].setDriverMap(n2p);
+						ad[x].setLogLevel(AUAVLEVEL);
+						ad[x].getCoapServer().start();
+				}
+
+				
 				
 				
 		}
 
 		public static void main(String args[]) throws Exception {
 				LinuxKernel k = new LinuxKernel();
+		}
+
+		// Code taken from stackoverflow in May 2017
+		// Thanks Sean Patrick Floyd
+		// Documentation by Christopher Stewart 
+		public <T> T instantiate(final String className, final Class<T> type){
+				try{
+						return type.cast(Class.forName(className).newInstance());
+				} catch(InstantiationException
+								          | IllegalAccessException
+								| ClassNotFoundException e){
+						throw new IllegalStateException(e);
+				}
 		}
 }
 

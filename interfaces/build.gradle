@@ -1,5 +1,10 @@
 apply plugin: 'java'
+def AUAVHOME = System.getenv('AUAVHOME')
 
+dependencies {
+   compile fileTree(dir: "$AUAVHOME/external/", include: ['*.jar'])
+}
+	 
 task installJars(type: Copy, dependsOn:assemble) {
    from "build/libs/interfaces.jar"
    into "../libs"
