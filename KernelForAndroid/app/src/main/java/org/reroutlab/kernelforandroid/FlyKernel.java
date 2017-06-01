@@ -9,12 +9,9 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import org.reroutlab.code.auav.drivers.AuavDrivers;
-import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class FlyKernel extends AppCompatActivity {
 
@@ -23,7 +20,7 @@ public class FlyKernel extends AppCompatActivity {
             Logger.getLogger(FlyKernel.class.getName());//get Logger object by calling getLogger receive the name of the LinuxKernal.class'name
 
 
-    HashMap n2p = new HashMap<String, String>();
+    HashMap<String, String> n2p = new HashMap<String, String>();
     AuavDrivers[] ad = new AuavDrivers[128];
 
 
@@ -60,7 +57,7 @@ public class FlyKernel extends AppCompatActivity {
         for (int x = 0; x < countDrivers; x++) {
             System.out.println("Jar: "+jarNames[x]);
             ad[x] = instantiate(jarNames[x],org.reroutlab.code.auav.drivers.AuavDrivers.class);
-            n2p.put(ad[x].getClass().getCanonicalName(),
+            n2p.put((String)ad[x].getClass().getCanonicalName(),
                     new String("Port:"+ad[x].getLocalPort()+"\n" ) );
         }
 

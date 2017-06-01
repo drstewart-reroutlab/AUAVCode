@@ -22,15 +22,22 @@ android {
         jackOptions {
             enabled true
         }
+        multiDexEnabled true
     }
     dexOptions {
-        incremental true
+        javaMaxHeapSize "6g"
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    packagingOptions {
+        //exclude  "META-INF/*"
+        exclude  "epl-v10.html"
+        exclude  "notice.html"
+        exclude  "edl-v10.html"
 
+    }
 }
 
 repositories {
