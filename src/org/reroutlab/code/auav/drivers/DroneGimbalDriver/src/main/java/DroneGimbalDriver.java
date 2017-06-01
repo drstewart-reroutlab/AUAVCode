@@ -1,16 +1,23 @@
 package org.reroutlab.code.auav.drivers;
 
 import java.util.*;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.OutputStreamWriter;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.lang.System.*;
 //import org.reroutlab.code.auav.interfaces.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.net.InetSocketAddress;
+import java.net.SocketException;
+
+import org.eclipse.californium.core.CoapResource;
+import org.eclipse.californium.core.CoapClient;
+import org.eclipse.californium.core.CoapResponse;
+import org.eclipse.californium.core.CoapServer;
+import org.eclipse.californium.core.network.CoapEndpoint;
+import org.eclipse.californium.core.network.EndpointManager;
+import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.core.server.resources.CoapExchange;
+
+
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -39,36 +46,47 @@ import dji.sdk.sdkmanager.DJISDKManager;
  * @since   2017-05-01 
  */
 
-public class DroneGimbalDriver implements Runnable {//,org.reroutlab.code.auav.drivers.AuavDrivers {
-		private int DGD_PORT = 0;
+public class DroneGimbalDriver implements org.reroutlab.code.auav.drivers.AuavDrivers { //implements???
+		
 		private DJIGimbalSpeedRotation mPitchSpeedRotation;
 		private DJIGimbalSpeedRotation mRollSpeedRotation;
 		private DJIGimbalSpeedRotation mYawSpeedRotation;
 		private Timer mTimer;
 		private GimbalRotateTimerTask mGimbalRotationTimerTask;
 
-		
+		private CoapServer cs;
+		public CoapServer getCoapServer() {
+				return (cs);
+		}
+		//start a server
 		public static void main(String[] args) {
-				DroneGimbalDriver dgd = new DroneGimbalDriver();
-				//System.out.println("LocalPort: " + dgd.getLocalPort() );
-				Thread dgdT = new Thread(dgd);
-				dgdT.start();
+				try { 
+						DroneGimbalDriver dgd = new DroneGimbalDriver();
+						dgd.getCoapServer().start();
+				}
+				catch (Exception e) {
+						dgdLogger.log(Level.WARNING, "Unable to start server" + e.getMessage());
+				}
 				
 		}
 
+
+
+
+		//implement allows to use Thread
+		//indicate port number
+		private static int LISTEN_PORT = 0;
+		private int driverPort = 0;
+		//???
 		
-    private static Logger dgdLogger =
+   		private static Logger dgdLogger =
 				Logger.getLogger(DroneGimbalDriver.class.getName());
 		public void setLogLevel(Level l) {
 				dgdLogger.setLevel(l);
 		}		
 		
-		private ServerSocket serverSocket;
 		public int getLocalPort() {
-				if (serverSocket == null) {
-						return -1;
-				}
-				return serverSocket.getLocalPort();
+				return driverPort; //???
 		}
 		
 		private String usageInfo=";move Pitch=## Yaw=## Roll=##;";
@@ -86,49 +104,60 @@ public class DroneGimbalDriver implements Runnable {//,org.reroutlab.code.auav.d
 		}
 
 		
-		public DroneGimbalDriver() {
+			
+		//constructor???
+		public DroneGimbalDriver() throws Exception {
 				dgdLogger.log(Level.FINEST, "In Constructor");
-				try {
-						serverSocket = new ServerSocket(DGD_PORT);
-						System.out.println(getLocalPort());
-				} catch (Exception e){
-						dgdLogger.log(Level.WARNING, "Unable to create server socket");
-				}
+				cs = new CoapServer(); //initilize the server
+				InetSocketAddress bindToAddress = new InetSocketAddress("localhost", LISTEN_PORT);//get the address
+				CoapEndpoint tmp = new CoapEndpoint(bindToAddress); //create endpoint
+				cs.addEndpoint(tmp);//add endpoint to server				
+				tmp.start();//Start this endpoint and all its components.
+				driverPort = tmp.getAddress().getPort();
+				
+				cs.add(new dgdResource());
 				
 		}
 
-		public void run() {
-				BufferedReader bufferedReader;
-				PrintWriter printWriter;
-				while (true) {
-						Socket clientSocket=null;
-						try {
-								clientSocket = serverSocket.accept();
-								bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-								printWriter = new PrintWriter(clientSocket.getOutputStream(),true);
 
-								String inputLine = bufferedReader.readLine();
-								if (inputLine != null) {
-										inputLine = inputLine.trim();
-										String outputLine = processCommands(inputLine);
-										printWriter.println(outputLine);
-								}
-								clientSocket.close();
-						}
-						catch (Exception e) {
-								dgdLogger.log(Level.WARNING, "Problem: " + e.toString() );
-						}
-				}
-		}
+
 		
-
-		private String processCommands(String inputLine) {
-				String outLine = "";
-				String[] args = inputLine.split(" ");
-						if (args[0].equals("help")) {
-								return(getUsageInfo());
+		//extends CoapResource class
+		private class dgdResource extends CoapResource {
+				public dgdResource() {
+						super("cr");//???
+						getAttributes().setTitle("cr");//???
+				}
+				/**
+				 *
+				 * This function process the input commands, if the there is list, append to 
+				 * the string, if not call sendTo methond find out the matching information
+				 *
+				 * @return information in the list
+				 *
+				 *
+				 */
+				@Override
+				public void handlePUT(CoapExchange ce) {
+						// Split on & and = then on ' '
+						byte[] payload = ce.getRequestPayload();
+						String inputLine = "";
+						try {
+								inputLine  = new String(payload, "UTF-8");
 						}
-						else if (args[0].equals("move")) {
+						catch ( Exception uee) {
+								System.out.println(uee.getMessage());
+						}
+						System.out.println("\n InputLine: "+inputLine);
+
+						String outLine = "";
+						String[] args = inputLine.split("-");//???
+						
+						// Format: dc=driver_cmd [driver_prm=driver_arg]*						
+						if (args[0].equals("dc=help")) {
+								ce.respond(getUsageInfo());
+						}
+						else if (args[0].equals("dc=move")) {
 								String[] kv1= args[1].split("=");
 								String[] kv2= args[2].split("=");
 								String[] kv3= args[3].split("=");								
@@ -162,22 +191,21 @@ public class DroneGimbalDriver implements Runnable {//,org.reroutlab.code.auav.d
 								}
 								
 
-								return ("Gimbal=Moved");
+								ce.respond ("Gimbal=Moved");
 						}
 						else {
-								return("Error: DroneGimbalDriver unknown command\n");
+								ce.respond("Error: DroneGimbalDriver unknown command\n");
 						}
-		}
+			}	
+		}	
 
-
-    private static class GimbalRotateTimerTask extends TimerTask {
+    		private static class GimbalRotateTimerTask extends TimerTask {
 				DJIGimbalSpeedRotation mPitch;
 				DJIGimbalSpeedRotation mRoll;
 				DJIGimbalSpeedRotation mYaw;
 				
-				GimbalRotateTimerTask(DJIGimbalSpeedRotation pitch,
-															DJIGimbalSpeedRotation roll,
-															DJIGimbalSpeedRotation yaw) {
+				GimbalRotateTimerTask(DJIGimbalSpeedRotation pitch, DJIGimbalSpeedRotation roll, DJIGimbalSpeedRotation yaw) {
+
 						super();
 						this.mPitch = pitch;
 						this.mRoll = roll;
@@ -203,4 +231,3 @@ public class DroneGimbalDriver implements Runnable {//,org.reroutlab.code.auav.d
 		
 		
 }
-

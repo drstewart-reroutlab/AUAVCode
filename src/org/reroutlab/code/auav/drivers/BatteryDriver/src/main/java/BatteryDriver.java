@@ -17,25 +17,15 @@ import org.eclipse.californium.core.network.EndpointManager;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.BatteryManager;
+import android.os.Bundle;
 
+public class BatteryDriver implements org.reroutlab.code.auav.drivers.AuavDrivers {
 
-/**
- * org.reroutlab.code.auav.drivers.ExternalCommandsDriver is an AUAV service.
- * The service accepts commands that could go to *any* module.
- * It also supports a "list" command that tells of all available modules.
- * It also supports a "help" command that explains syntax.
- *
- * @author  Christopher Stewart
- * @version 0.01
- * @since   2017-05-01 
- */
-
-public class LocationManagerDriver implements org.reroutlab.code.auav.drivers.AuavDrivers {
-		// Initializing the variables, used only in this module, no public access (outside of the method)
-		private float X = 0;
-		private float Y = 0;
-		private float Z = 0;
-		
 		private CoapServer cs;
 		public CoapServer getCoapServer() {
 				return (cs);
@@ -43,11 +33,11 @@ public class LocationManagerDriver implements org.reroutlab.code.auav.drivers.Au
 		//start a server
 		public static void main(String[] args) {
 				try { 
-						LocationManagerDriver lmd = new LocationManagerDriver();
-						lmd.getCoapServer().start();
+						BatteryDriver bd = new BatteryDriver();
+						bd.getCoapServer().start();
 				}
 				catch (Exception e) {
-						lmdLogger.log(Level.WARNING, "Unable to start server" + e.getMessage());
+						bdLogger.log(Level.WARNING, "Unable to start server" + e.getMessage());
 				}
 				
 		}
@@ -61,34 +51,19 @@ public class LocationManagerDriver implements org.reroutlab.code.auav.drivers.Au
 		private int driverPort = 0;
 		//???
 		
-    		private static Logger lmdLogger =
-				Logger.getLogger(LocationManagerDriver.class.getName());//return the name of the entity represented by this class object
-    				//get Logger object by calling getLogger receive the name of the ExternalCommandDriver.class'name
-		/**
-		 *
-		 *
-		 * This specifying which message levels will be logged by this logger
-		 *
-		 */
-		public void setLogLevel(Level l) {
-				lmdLogger.setLevel(l);
-						}		
+
 		
+   		private static Logger bdLogger =
+				Logger.getLogger(BatteryDriver.class.getName());
+		public void setLogLevel(Level l) {
+				bdLogger.setLevel(l);
+		}		
 		
 		public int getLocalPort() {
-						return driverPort; //???
+				return driverPort; 
 		}
 		
-		private String usageInfo=";gotoXYZ X=## Y=## Z=##; getLocation;";
-
-		/**
-		 *
-		 * This function return the design string to respond to call
-		 *
-		 *
-		 * @return usageInfo 
-		 *
-		 */
+		private String usageInfo="getBattery";
 		public String getUsageInfo() {
 				return usageInfo;
 		}
@@ -96,14 +71,6 @@ public class LocationManagerDriver implements org.reroutlab.code.auav.drivers.Au
 		
 
 		private HashMap driver2port;  // key=drivername value={port,usageInfo}
-
-		/**
-		 *
-		 * This function help construct Map
-		 *
-		 * @param HashMap<String, String> m
-		 *
-		 */
 		public void setDriverMap(HashMap<String, String> m) {
 				if (m != null) {
 						driver2port = new HashMap<String, String>(m);
@@ -111,9 +78,10 @@ public class LocationManagerDriver implements org.reroutlab.code.auav.drivers.Au
 		}
 
 		
+		
 		//constructor???
-		public LocationManagerDriver() throws Exception {
-				lmdLogger.log(Level.FINEST, "In Constructor");
+		public BatteryDriver() throws Exception {
+				bdLogger.log(Level.FINEST, "In Constructor");
 				cs = new CoapServer(); //initilize the server
 				InetSocketAddress bindToAddress = new InetSocketAddress("localhost", LISTEN_PORT);//get the address
 				CoapEndpoint tmp = new CoapEndpoint(bindToAddress); //create endpoint
@@ -121,15 +89,16 @@ public class LocationManagerDriver implements org.reroutlab.code.auav.drivers.Au
 				tmp.start();//Start this endpoint and all its components.
 				driverPort = tmp.getAddress().getPort();
 				
-				cs.add(new lmdResource());
+				cs.add(new bdResource());
 				
 		}
 
 
 
+		
 		//extends CoapResource class
-		private class lmdResource extends CoapResource {
-				public lmdResource() {
+		private class bdResource extends CoapResource {
+				public bdResource() {
 						super("cr");//???
 						getAttributes().setTitle("cr");//???
 				}
@@ -162,24 +131,26 @@ public class LocationManagerDriver implements org.reroutlab.code.auav.drivers.Au
 						if (args[0].equals("dc=help")) {
 								ce.respond(getUsageInfo());
 						}
-						else if (args[0].equals("dc=gotoXYZ")) {
-								X = Float.parseFloat(args[1].substring(2));
-								Y = Float.parseFloat(args[2].substring(2));
-								Z = Float.parseFloat(args[3].substring(2));
-								ce.respond ("OK");
+						else if (args[0].equals("dc=getbattery")) {
+								BroadcastReceiver battery = new BroadcastReceiver(){
+        								@Override
+        								public void onReceive(Context context, Intent intent) {
+          							  	int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0);
+									String s=String.valueOf(level);
+									bdLogger.log(Level.FINEST,s+"%");
+               								}
+
+								};
+									ce.respond("OK");	
+
+
+
+    	    					}else {
+								ce.respond("Error: BatteryDriver unknown command\n");
 						}
-						else if (args[0].equals("dc=getLocation")) {
-								ce.respond ("X="+ String.format("%.2f",X) +
-												"Y="+ String.format("%.2f",Y) +
-												"Z="+ String.format("%.2f",Z) );
-						}
-						else {
-								ce.respond("Error: LocationManagerDriver unknown command\n");
-						}
-						
-						
+	
+    			    
+		
 				}
 		}
-
 }
-

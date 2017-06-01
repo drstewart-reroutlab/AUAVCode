@@ -1,22 +1,23 @@
 apply plugin: 'java'
-jar.baseName = 'org.reroutlab.code.auav.DroneGimbalDriver'
+jar.baseName = 'org.reroutlab.code.auav.drivers.BatteryDriver'
 def AUAVHOME = System.getenv('AUAVHOME')
 
 repositories {
    flatDir {
-              dirs "$AUAVHOME/libs"
+	      dirs "$AUAVHOME/libs"
    }
    flatDir {
-              dirs "$AUAVHOME/external"
+	      dirs "$AUAVHOME/external"
    }
    flatDir {
-              dirs "$AUAVHOME/apps"
-   }     
+	      dirs "$AUAVHOME/apps"
+   }	 
 }
 
 dependencies {
    compile fileTree(dir: "$AUAVHOME/libs", include: ['*.jar'])
    compile fileTree(dir: "$AUAVHOME/external/", include: ['*.jar'])
    compile fileTree(dir: "$AUAVHOME/apps/", include: ['*.jar'])
-   compile fileTree(dir: ".", include: ['*.jar'])       
+   compile fileTree(dir: ".", include: ['*.jar'])	
 }
+
