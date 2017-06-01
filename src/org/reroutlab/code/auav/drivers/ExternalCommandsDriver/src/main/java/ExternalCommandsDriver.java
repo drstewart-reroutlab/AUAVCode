@@ -111,7 +111,7 @@ public class ExternalCommandsDriver implements org.reroutlab.code.auav.drivers.A
 		public ExternalCommandsDriver() throws SocketException {
 				ecdLogger.log(Level.FINEST, "In Constructor");
 				cs = new CoapServer(); //create a new coapserver
-				InetSocketAddress bindToAddress = new InetSocketAddress("localhost", LISTEN_PORT);//Creates a socket address from a hostname and a port number.
+				InetSocketAddress bindToAddress = new InetSocketAddress( LISTEN_PORT);//Creates a socket address from a hostname and a port number.
 				cs.addEndpoint(new CoapEndpoint(bindToAddress));//Adds an Endpoint to the server.
 				driverPort = bindToAddress.getPort();
 
