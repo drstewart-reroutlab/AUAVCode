@@ -1,0 +1,59 @@
+apply plugin: 'com.android.application'
+def AUAVHOME = "/home/cstewart/reroutlab.code/reroutlab.cstewart.code.auav"
+android {
+    compileSdkVersion 26
+    buildToolsVersion "26.0.0"
+    defaultConfig {
+        applicationId "org.reroutlab.code.auav.kernels.auavandroid"
+        minSdkVersion 23
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled false
+        jackOptions {
+            enabled true
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+repositories {
+    flatDir {
+        dirs "$AUAVHOME/libs"
+    }
+    flatDir {
+        dirs "$AUAVHOME/external"
+    }
+    flatDir {
+        dirs "$AUAVHOME/apps"
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(dir: "$AUAVHOME/libs", include: ['*.jar'])
+    compile files("$AUAVHOME/external/californium-core-1.1.0-SNAPSHOT.jar")
+    compile files("$AUAVHOME/external/dji-sdk.jar")
+    compile files("$AUAVHOME/external/dji-eventbus.jar")
+    compile files("$AUAVHOME/external/dji-gson.jar")
+//    compile fileTree(dir: "$AUAVHOME/external/", include: ['*.jar'])
+    compile fileTree(dir: "$AUAVHOME/apps/", include: ['*.jar'])
+
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:26.+'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    compile 'com.android.support:design:26.+'
+    testCompile 'junit:junit:4.12'
+}
