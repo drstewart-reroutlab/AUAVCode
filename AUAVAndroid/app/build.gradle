@@ -25,6 +25,17 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'epl-v10.html'
+        exclude 'notice.html'
+        exclude 'edl-v10.html'
+    }
+
 }
 
 repositories {
@@ -38,11 +49,11 @@ repositories {
         dirs "$AUAVHOME/apps"
     }
 }
-
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile fileTree(dir: "$AUAVHOME/libs", include: ['*.jar'])
     compile files("$AUAVHOME/external/californium-core-1.1.0-SNAPSHOT.jar")
+    compile files("$AUAVHOME/external/element-connector-1.1.0-SNAPSHOT.jar")
     compile files("$AUAVHOME/external/dji-sdk.jar")
     compile files("$AUAVHOME/external/dji-eventbus.jar")
     compile files("$AUAVHOME/external/dji-gson.jar")
