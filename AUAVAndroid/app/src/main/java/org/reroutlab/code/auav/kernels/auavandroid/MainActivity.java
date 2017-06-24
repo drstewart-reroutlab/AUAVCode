@@ -20,6 +20,8 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 
+import dji.sdk.camera.DJICamera;
+
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "AUAVAndroid";
@@ -32,6 +34,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        DJICamera camera = App.getCameraInstance();
+
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
