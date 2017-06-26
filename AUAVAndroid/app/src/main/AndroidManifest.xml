@@ -10,7 +10,7 @@
     -->
     <meta-data
         android:name="com.dji.sdk.API_KEY"
-        android:value="99e71979814dea7e6791496c" />
+        android:value="92d24534f178a85f815da580" />
 
     <service android:name="dji.sdk.sdkmanager.DJIGlobalService" />
     <service android:name="dji.internal.geofeature.flyforbid.FlyforbidUpdateService" />

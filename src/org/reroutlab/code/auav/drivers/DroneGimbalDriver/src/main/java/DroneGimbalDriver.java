@@ -51,8 +51,8 @@ public class DroneGimbalDriver implements org.reroutlab.code.auav.drivers.AuavDr
 		private DJIGimbalSpeedRotation mPitchSpeedRotation;
 		private DJIGimbalSpeedRotation mRollSpeedRotation;
 		private DJIGimbalSpeedRotation mYawSpeedRotation;
-		private Timer mTimer;
-		private GimbalRotateTimerTask mGimbalRotationTimerTask;
+	//	private Timer mTimer;
+	//	private GimbalRotateTimerTask mGimbalRotationTimerTask;
 
 		private CoapServer cs;
 		public CoapServer getCoapServer() {
@@ -168,7 +168,7 @@ public class DroneGimbalDriver implements org.reroutlab.code.auav.drivers.AuavDr
 								mYawSpeedRotation = new DJIGimbalSpeedRotation(Float.parseFloat(kv3[1]),
 																															 DJIGimbalRotateDirection.Clockwise);
 								
-								long t = System.currentTimeMillis();
+							/*	long t = System.currentTimeMillis();
 								long end = t + 3000;
 								while (System.currentTimeMillis() < end) {
 										if (mTimer == null) {
@@ -180,15 +180,15 @@ public class DroneGimbalDriver implements org.reroutlab.code.auav.drivers.AuavDr
 																																						 mYawSpeedRotation);
 												mTimer.schedule(mGimbalRotationTimerTask, 0, 100);
 										}
-								}
+								}*/
 
-								if (mTimer != null) {
+							/*	if (mTimer != null) {
 										mGimbalRotationTimerTask.cancel();
 										mTimer.cancel();
 										mTimer.purge();
 										mGimbalRotationTimerTask = null;
 										mTimer = null;
-								}
+								}*/
 								
 
 								ce.respond ("Gimbal=Moved");
@@ -199,7 +199,7 @@ public class DroneGimbalDriver implements org.reroutlab.code.auav.drivers.AuavDr
 			}	
 		}	
 
-    		private static class GimbalRotateTimerTask extends TimerTask {
+    	/*	private static class GimbalRotateTimerTask extends TimerTask {
 				DJIGimbalSpeedRotation mPitch;
 				DJIGimbalSpeedRotation mRoll;
 				DJIGimbalSpeedRotation mYaw;
@@ -227,7 +227,7 @@ public class DroneGimbalDriver implements org.reroutlab.code.auav.drivers.AuavDr
 																										});
 						}
 				}
-		}
+		}*/
 		
 		
 }
