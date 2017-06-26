@@ -214,14 +214,18 @@ public class DroneGimbalDriver implements org.reroutlab.code.auav.drivers.AuavDr
 				
 				@Override
 				public void run() {
+
+
 					
 
 				try{
+					DJISDKManager.getInstance().registerApp();
+					System.out.println("Register successful");
 
-					if(DJISDKManager.getInstance()==null){
-						dgdLogger.log(Level.FINEST, "getInstance");
-					}else if(DJISDKManager.getInstance().getDJIProduct()==null){
-						dgdLogger.log(Level.FINEST, "getDJIProduct");
+					if(DJISDKManager.getInstance().getDJIProduct()==null){
+						System.out.println("GetDJIProduct");
+
+					//	dgdLogger.log(Level.FINEST, "getDJIProduct");
 
 					}						
 					if (DJISDKManager.getInstance().getDJIProduct().getGimbal() != null) {
