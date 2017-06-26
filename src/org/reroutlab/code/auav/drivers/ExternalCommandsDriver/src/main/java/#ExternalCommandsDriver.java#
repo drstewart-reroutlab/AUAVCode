@@ -174,7 +174,7 @@ public class ExternalCommandsDriver implements org.reroutlab.code.auav.drivers.A
 						}
 						else if (driver2port.containsKey(driverName) )  {
 								String[] tmp_port = ((String)driver2port.get(driverName)).split(":"); //value={port,usageInfo}
-								CoapClient client = new CoapClient("coap://127.0.0.1:"+tmp_port[1].trim()+"/cr"); //create client;with usageInfo
+								CoapClient client = neew CoapClient("coap://127.0.0.1:"+tmp_port[1].trim()+"/cr"); //create client;with usageInfo
 								String c = "";										
 								for (int i=1; i < args.length;i++) {
 										c = c + args[i] + "-";
