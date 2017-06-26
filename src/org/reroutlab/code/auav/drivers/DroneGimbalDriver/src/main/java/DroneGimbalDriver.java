@@ -51,9 +51,9 @@ public class DroneGimbalDriver implements org.reroutlab.code.auav.drivers.AuavDr
 		private DJIGimbalSpeedRotation mPitchSpeedRotation;
 		private DJIGimbalSpeedRotation mRollSpeedRotation;
 		private DJIGimbalSpeedRotation mYawSpeedRotation;
-	//	private Timer mTimer;
-	//	private GimbalRotateTimerTask mGimbalRotationTimerTask;
-
+		private Timer mTimer;
+		private GimbalRotateTimerTask mGimbalRotationTimerTask;
+	
 		private CoapServer cs;
 		public CoapServer getCoapServer() {
 				return (cs);
@@ -168,7 +168,7 @@ public class DroneGimbalDriver implements org.reroutlab.code.auav.drivers.AuavDr
 								mYawSpeedRotation = new DJIGimbalSpeedRotation(Float.parseFloat(kv3[1]),
 																															 DJIGimbalRotateDirection.Clockwise);
 								
-							/*	long t = System.currentTimeMillis();
+								long t = System.currentTimeMillis();
 								long end = t + 3000;
 								while (System.currentTimeMillis() < end) {
 										if (mTimer == null) {
@@ -180,15 +180,15 @@ public class DroneGimbalDriver implements org.reroutlab.code.auav.drivers.AuavDr
 																																						 mYawSpeedRotation);
 												mTimer.schedule(mGimbalRotationTimerTask, 0, 100);
 										}
-								}*/
+								}
 
-							/*	if (mTimer != null) {
+								if (mTimer != null) {
 										mGimbalRotationTimerTask.cancel();
 										mTimer.cancel();
 										mTimer.purge();
 										mGimbalRotationTimerTask = null;
 										mTimer = null;
-								}*/
+								}
 								
 
 								ce.respond ("Gimbal=Moved");
@@ -199,7 +199,7 @@ public class DroneGimbalDriver implements org.reroutlab.code.auav.drivers.AuavDr
 			}	
 		}	
 
-    	/*	private static class GimbalRotateTimerTask extends TimerTask {
+    		private static class GimbalRotateTimerTask extends TimerTask {
 				DJIGimbalSpeedRotation mPitch;
 				DJIGimbalSpeedRotation mRoll;
 				DJIGimbalSpeedRotation mYaw;
@@ -214,20 +214,38 @@ public class DroneGimbalDriver implements org.reroutlab.code.auav.drivers.AuavDr
 				
 				@Override
 				public void run() {
-						
-						
-						if (DJISDKManager.getInstance().getDJIProduct().getGimbal() != null) {
-								DJISDKManager.getInstance().getDJIProduct().
-										getGimbal().rotateGimbalBySpeed(mPitch,	mRoll, mYaw,
-																										new DJICommonCallbacks.DJICompletionCallback() {
-																												@Override
-																												public void onResult(DJIError error) {
+					
+
+				try{
+
+					if(DJISDKManager.getInstance()==null){
+						dgdLogger.log(Level.FINEST, "getInstance");
+					}else if(DJISDKManager.getInstance().getDJIProduct()==null){
+						dgdLogger.log(Level.FINEST, "getDJIProduct");
+
+					}						
+					if (DJISDKManager.getInstance().getDJIProduct().getGimbal() != null) {
+						DJISDKManager.getInstance().getDJIProduct().
+							getGimbal().rotateGimbalBySpeed(mPitch,	mRoll, mYaw,
+									new DJICommonCallbacks.DJICompletionCallback() {
+										@Override
+										public void onResult(DJIError error) {
 																														
-																												}
-																										});
+										}
+								});
+
+								//using if-else statement to find which part lead to null
 						}
+				}catch(Exception e){
+					
+					dgdLogger.log(Level.WARNING, "Can't connect" + e.getStackTrace().toString());
+					dgdLogger.log(Level.WARNING, e.toString());
+
+
+
 				}
-		}*/
+				}
+		}
 		
 		
 }
