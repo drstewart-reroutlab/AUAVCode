@@ -1,5 +1,5 @@
 apply plugin: 'com.android.application'
-def AUAVHOME = "/Users/shiqizhang/reroutlab.cstewart.code.auav"
+def AUAVHOME = "/home/cstewart/reroutlab.code/reroutlab.cstewart.code.auav"
 android {
     compileSdkVersion 26
     buildToolsVersion "26.0.0"
@@ -52,13 +52,13 @@ repositories {
 dependencies {
     //compile fileTree(dir: 'libs', include: ['*.jar'])
     apk fileTree(dir: "$AUAVHOME/libs", include: ['*.jar'])
-    compile files("$AUAVHOME/libs/interface.jar")
+    compile files("$AUAVHOME/libs/interfaces.jar")
     compile files("$AUAVHOME/external/californium-core-1.1.0-SNAPSHOT.jar")
     compile files("$AUAVHOME/external/element-connector-1.1.0-SNAPSHOT.jar")
     compile files("$AUAVHOME/external/dji-sdk.jar")
     apk files("$AUAVHOME/external/dji-eventbus.jar")
     apk files("$AUAVHOME/external/dji-gson.jar")
-//    compile fileTree(dir: "$AUAVHOME/external/", include: ['*.jar'])
+    compile fileTree(dir: "$AUAVHOME/external/", include: ['*.jar'])
     apk fileTree(dir: "$AUAVHOME/apps/", include: ['*.jar'])
 
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
