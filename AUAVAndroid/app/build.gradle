@@ -58,7 +58,7 @@ dependencies {
     compile files("$AUAVHOME/external/dji-sdk.jar")
     apk files("$AUAVHOME/external/dji-eventbus.jar")
     apk files("$AUAVHOME/external/dji-gson.jar")
-    compile fileTree(dir: "$AUAVHOME/external/", include: ['*.jar'])
+//    compile fileTree(dir: "$AUAVHOME/external/", include: ['*.jar'])
     apk fileTree(dir: "$AUAVHOME/apps/", include: ['*.jar'])
 
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {

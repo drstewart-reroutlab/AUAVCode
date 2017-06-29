@@ -20,7 +20,6 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 
-import dji.sdk.camera.DJICamera;
 
 
 public class MainActivity extends AppCompatActivity {
