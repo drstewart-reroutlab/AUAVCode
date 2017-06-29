@@ -29,6 +29,8 @@ public class CaptureImageDriver implements org.reroutlab.code.auav.drivers.AuavD
 // Initializing the variables, used only in this module, no public access (outside of the method)
 		private int IMAGE_PORT = 0;
 		private int PIC_NUM = 0;
+		private String AUAVHOME_STRING = System.getenv("AUAVHOME");
+		private String PIC_ADDR = AUAVHOME_STRING +"/src/org/reroutlab/code/auav/drivers/CaptureImageDriver/CamEmu/";
 		private static int LISTEN_PORT = 0;
 		private int driverPort = 0;
 
@@ -120,10 +122,10 @@ public class CaptureImageDriver implements org.reroutlab.code.auav.drivers.AuavD
 						}
 						else if (args[0].equals("dc=PicLabel")) {
 								PIC_NUM = Integer.parseInt(args[1]);
-								ce.respond("CapturedImage");
+								ce.respond("Set PIC_NUM to " + PIC_NUM);
 						}
 						else if (args[0].equals("dc=GetImage")) {
-								ce.respond("The label of the image is " + PIC_NUM + ".");
+								ce.respond(PIC_ADDR + PIC_NUM );
 						}
 						else {
 								ce.respond("Error: LocationManagerDriver unknown command\n");
