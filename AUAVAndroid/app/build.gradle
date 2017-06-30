@@ -50,15 +50,16 @@ repositories {
     }
 }
 dependencies {
-    //compile fileTree(dir: 'libs', include: ['*.jar'])
+    //compile fileTree(dir: 'libs', include: ['*.jar'])//uncomment
     apk fileTree(dir: "$AUAVHOME/libs", include: ['*.jar'])
-    compile files("$AUAVHOME/libs/interface.jar")
+    compile files("$AUAVHOME/libs/interfaces.jar")
     compile files("$AUAVHOME/external/californium-core-1.1.0-SNAPSHOT.jar")
     compile files("$AUAVHOME/external/element-connector-1.1.0-SNAPSHOT.jar")
     compile files("$AUAVHOME/external/dji-sdk.jar")
+    compile project(':dJISDKLIB')
     apk files("$AUAVHOME/external/dji-eventbus.jar")
     apk files("$AUAVHOME/external/dji-gson.jar")
-//    compile fileTree(dir: "$AUAVHOME/external/", include: ['*.jar'])
+    //compile fileTree(dir: "$AUAVHOME/external/", include: ['*.jar'])//uncomment
     apk fileTree(dir: "$AUAVHOME/apps/", include: ['*.jar'])
 
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
