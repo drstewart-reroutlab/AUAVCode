@@ -11,3 +11,4 @@ task installJars(type: Copy) {
   from subprojects.collect { it.tasks.withType(Jar) }
   into "../libs"
 }
+

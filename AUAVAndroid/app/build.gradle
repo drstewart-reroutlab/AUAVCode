@@ -1,5 +1,5 @@
 apply plugin: 'com.android.application'
-def AUAVHOME = "/Users/shiqizhang/reroutlab.cstewart.code.auav"
+def AUAVHOME = "/home/cstewart/reroutlab.code/reroutlab.cstewart.code.auav"
 android {
     compileSdkVersion 26 //26
     buildToolsVersion "26.0.0" //26

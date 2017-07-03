@@ -148,7 +148,7 @@ public class ExternalCommandsDriver implements org.reroutlab.code.auav.drivers.A
 						catch ( Exception uee) {
 								System.out.println(uee.getMessage());
 						}
-						//System.out.println("\n InputLine: "+inputLine);
+						System.out.println("\n InputLine: "+inputLine);
 
 						String outLine = "";
 						String[] args = inputLine.split("-"); //???

@@ -60,7 +60,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -136,37 +135,6 @@ public class MainActivity extends AppCompatActivity {
         };
         t.start();
 
-     /*   mPitchSpeedRotation = new DJIGimbalSpeedRotation(20,
-                DJIGimbalRotateDirection.Clockwise);
-        mRollSpeedRotation = new DJIGimbalSpeedRotation(20,
-                DJIGimbalRotateDirection.Clockwise);
-        mYawSpeedRotation = new DJIGimbalSpeedRotation(20,
-                DJIGimbalRotateDirection.Clockwise);
-
-
-        long time = System.currentTimeMillis();
-        long end = time + 3000;
-        while (System.currentTimeMillis() < end) {
-            if (mTimer == null) {
-                mTimer = new Timer();
-                mPitchSpeedRotation = new DJIGimbalSpeedRotation(10,
-                        DJIGimbalRotateDirection.Clockwise);
-                mGimbalRotationTimerTask = new GimbalRotateTimerTask(mPitchSpeedRotation,
-                        mRollSpeedRotation,
-                        mYawSpeedRotation);
-                mTimer.schedule(mGimbalRotationTimerTask, 0, 100);
-            }
-        }
-
-        if (mTimer != null) {
-            mGimbalRotationTimerTask.cancel();
-            mTimer.cancel();
-            mTimer.purge();
-            mGimbalRotationTimerTask = null;
-            mTimer = null;
-        } */
-
-
     }
 
     @Override
@@ -202,56 +170,6 @@ public class MainActivity extends AppCompatActivity {
             throw new IllegalStateException(e);
         }
     }
-
-/*    private static class GimbalRotateTimerTask extends TimerTask {
-        DJIGimbalSpeedRotation mPitch;
-        DJIGimbalSpeedRotation mRoll;
-        DJIGimbalSpeedRotation mYaw;
-
-        GimbalRotateTimerTask(DJIGimbalSpeedRotation pitch, DJIGimbalSpeedRotation roll, DJIGimbalSpeedRotation yaw) {
-
-            super();
-            this.mPitch = pitch;
-            this.mRoll = roll;
-            this.mYaw = yaw;
-        }
-
-        @Override
-        public void run() {
-
-
-            if (DJISDKManager.getInstance() == null) {
-                System.out.println("GetInstance");
-            }
-
-            if (DJISDKManager.getInstance().getDJIProduct() == null) {
-                System.out.println("GetDJIProduct");
-
-            }
-
-            try {
-                DJISDKManager.getInstance().registerApp();
-                System.out.println("Register successful");
-
-
-                if (DJISDKManager.getInstance().getDJIProduct().getGimbal() != null) {
-                    DJISDKManager.getInstance().getDJIProduct().
-                            getGimbal().rotateGimbalBySpeed(mPitch, mRoll, mYaw,
-                            new DJICommonCallbacks.DJICompletionCallback() {
-                                @Override
-                                public void onResult(DJIError error) {
-
-                                }
-                            });
-
-                    //using if-else statement to find which part lead to null
-                }
-            }catch(Exception e){
-
-            }
-        }
-    }*/
-
 
 }
 
