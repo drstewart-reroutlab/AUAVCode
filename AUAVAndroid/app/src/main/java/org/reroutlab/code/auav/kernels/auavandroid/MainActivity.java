@@ -11,7 +11,9 @@ import android.view.MenuItem;
 import android.Manifest;
 import android.util.Log;
 import android.support.v4.app.ActivityCompat;
+
 import org.reroutlab.code.auav.drivers.AuavDrivers;
+
 import java.util.HashMap;
 import java.io.InputStream;
 import java.io.BufferedReader;
@@ -20,11 +22,35 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 
+import dji.common.error.DJIError;
+import dji.common.gimbal.DJIGimbalSpeedRotation;
+import dji.common.gimbal.DJIGimbalRotateDirection;
+import dji.common.util.DJICommonCallbacks;
+import dji.common.error.DJISDKError;
+import dji.sdk.base.DJIBaseComponent;
+import dji.sdk.base.DJIBaseProduct;
+import dji.sdk.camera.DJICamera;
+import dji.sdk.products.DJIAircraft;
+import dji.sdk.products.DJIHandHeld;
+import dji.sdk.sdkmanager.DJIBluetoothProductConnector;
+import dji.sdk.sdkmanager.DJISDKManager;
+
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "AUAVAndroid";
     Level AUAVLEVEL = Level.ALL;
+
+/*    private DJIGimbalSpeedRotation mPitchSpeedRotation;
+    private DJIGimbalSpeedRotation mRollSpeedRotation;
+    private DJIGimbalSpeedRotation mYawSpeedRotation;
+    private Timer mTimer;
+    private GimbalRotateTimerTask mGimbalRotationTimerTask; */
+
+
 
     HashMap n2p = new HashMap<String, String>();
     AuavDrivers[] ad = new AuavDrivers[128];
@@ -33,9 +59,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
-
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -63,6 +86,14 @@ public class MainActivity extends AppCompatActivity {
                         Manifest.permission.READ_PHONE_STATE,
                 }
                 , 0);
+
+        DJIBaseProduct a=App.getProductInstance();
+
+        if(a==null) Log.v(TAG,"Get Null object");
+
+        DJICamera b=App.getCameraInstance();
+
+        if(b==null) Log.v(TAG,"Get Null camera");
 
         Thread t = new Thread() {
             public void run() {
@@ -114,7 +145,6 @@ public class MainActivity extends AppCompatActivity {
         };
         t.start();
 
-
     }
 
     @Override
@@ -139,16 +169,17 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public <T> T instantiate(final String className, final Class<T> type){
-        try{
-            Log.v(TAG,"Loading driver: " + className);
+    public <T> T instantiate(final String className, final Class<T> type) {
+        try {
+            Log.v(TAG, "Loading driver: " + className);
             return type.cast(Class.forName(className).newInstance());
-        } catch(InstantiationException
+        } catch (InstantiationException
                 | IllegalAccessException
-                | ClassNotFoundException e){
-            Log.e(TAG,"Error:" + e.toString() + "\nStack"+ e.getStackTrace().toString());
+                | ClassNotFoundException e) {
+            Log.e(TAG, "Error:" + e.toString() + "\nStack" + e.getStackTrace().toString());
             throw new IllegalStateException(e);
         }
     }
 
 }
+
