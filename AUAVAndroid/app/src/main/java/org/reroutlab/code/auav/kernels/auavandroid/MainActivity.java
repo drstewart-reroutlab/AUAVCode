@@ -22,16 +22,34 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 
+import dji.common.error.DJIError;
+import dji.common.gimbal.DJIGimbalSpeedRotation;
+import dji.common.gimbal.DJIGimbalRotateDirection;
+import dji.common.util.DJICommonCallbacks;
+import dji.common.error.DJISDKError;
+import dji.sdk.base.DJIBaseComponent;
 import dji.sdk.base.DJIBaseProduct;
+import dji.sdk.camera.DJICamera;
+import dji.sdk.products.DJIAircraft;
+import dji.sdk.products.DJIHandHeld;
+import dji.sdk.sdkmanager.DJIBluetoothProductConnector;
 import dji.sdk.sdkmanager.DJISDKManager;
 
-//import dji.sdk.base.DJIBaseProduct;
-//import dji.sdk.camera.DJICamera;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "AUAVAndroid";
     Level AUAVLEVEL = Level.ALL;
+
+/*    private DJIGimbalSpeedRotation mPitchSpeedRotation;
+    private DJIGimbalSpeedRotation mRollSpeedRotation;
+    private DJIGimbalSpeedRotation mYawSpeedRotation;
+    private Timer mTimer;
+    private GimbalRotateTimerTask mGimbalRotationTimerTask; */
+
 
 
     HashMap n2p = new HashMap<String, String>();
@@ -42,12 +60,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-    /*    try{
-            System.load("/dJISDKLIB/src/main/jniLibs/armeabi-v7a/libSDKRelativeJNI.so");
-        }catch (Exception e){
-            System.out.println("Error Message: "+e.getMessage());
-            e.printStackTrace(System.err);
-        }*/
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -68,6 +80,11 @@ public class MainActivity extends AppCompatActivity {
 
         DJIBaseProduct a=App.getProductInstance();
 
+        if(a==null) Log.v(TAG,"Get Null object");
+
+        DJICamera b=App.getCameraInstance();
+
+        if(b==null) Log.v(TAG,"Get Null camera");
 
         Thread t = new Thread() {
             public void run() {
@@ -119,6 +136,36 @@ public class MainActivity extends AppCompatActivity {
         };
         t.start();
 
+     /*   mPitchSpeedRotation = new DJIGimbalSpeedRotation(20,
+                DJIGimbalRotateDirection.Clockwise);
+        mRollSpeedRotation = new DJIGimbalSpeedRotation(20,
+                DJIGimbalRotateDirection.Clockwise);
+        mYawSpeedRotation = new DJIGimbalSpeedRotation(20,
+                DJIGimbalRotateDirection.Clockwise);
+
+
+        long time = System.currentTimeMillis();
+        long end = time + 3000;
+        while (System.currentTimeMillis() < end) {
+            if (mTimer == null) {
+                mTimer = new Timer();
+                mPitchSpeedRotation = new DJIGimbalSpeedRotation(10,
+                        DJIGimbalRotateDirection.Clockwise);
+                mGimbalRotationTimerTask = new GimbalRotateTimerTask(mPitchSpeedRotation,
+                        mRollSpeedRotation,
+                        mYawSpeedRotation);
+                mTimer.schedule(mGimbalRotationTimerTask, 0, 100);
+            }
+        }
+
+        if (mTimer != null) {
+            mGimbalRotationTimerTask.cancel();
+            mTimer.cancel();
+            mTimer.purge();
+            mGimbalRotationTimerTask = null;
+            mTimer = null;
+        } */
+
 
     }
 
@@ -155,6 +202,55 @@ public class MainActivity extends AppCompatActivity {
             throw new IllegalStateException(e);
         }
     }
+
+/*    private static class GimbalRotateTimerTask extends TimerTask {
+        DJIGimbalSpeedRotation mPitch;
+        DJIGimbalSpeedRotation mRoll;
+        DJIGimbalSpeedRotation mYaw;
+
+        GimbalRotateTimerTask(DJIGimbalSpeedRotation pitch, DJIGimbalSpeedRotation roll, DJIGimbalSpeedRotation yaw) {
+
+            super();
+            this.mPitch = pitch;
+            this.mRoll = roll;
+            this.mYaw = yaw;
+        }
+
+        @Override
+        public void run() {
+
+
+            if (DJISDKManager.getInstance() == null) {
+                System.out.println("GetInstance");
+            }
+
+            if (DJISDKManager.getInstance().getDJIProduct() == null) {
+                System.out.println("GetDJIProduct");
+
+            }
+
+            try {
+                DJISDKManager.getInstance().registerApp();
+                System.out.println("Register successful");
+
+
+                if (DJISDKManager.getInstance().getDJIProduct().getGimbal() != null) {
+                    DJISDKManager.getInstance().getDJIProduct().
+                            getGimbal().rotateGimbalBySpeed(mPitch, mRoll, mYaw,
+                            new DJICommonCallbacks.DJICompletionCallback() {
+                                @Override
+                                public void onResult(DJIError error) {
+
+                                }
+                            });
+
+                    //using if-else statement to find which part lead to null
+                }
+            }catch(Exception e){
+
+            }
+        }
+    }*/
 
 
 }

@@ -25,20 +25,6 @@
     <uses-feature
         android:name="android.hardware.usb.accessory"
         android:required="true" />
-    <!--
-        ADD API_KEY HERE and make sure you
-        are connected to the Internet before
-        the app is launched
-    -->
-    <meta-data
-        android:name="com.dji.sdk.API_KEY"
-        android:value="92d24534f178a85f815da580" />
-
-    <service android:name="dji.sdk.sdkmanager.DJIGlobalService" />
-    <service android:name="dji.internal.geofeature.flyforbid.FlyforbidUpdateService" />
-
-    <!-- Required for receiving GEO system pushing. -->
-    <service android:name="dji.sdk.sdkmanager.GeoSyncFileService" />
 
     <!--
          Required for receiving accessory attachment events.
@@ -52,6 +38,25 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+
+        <!--
+        ADD API_KEY HERE and make sure you
+        are connected to the Internet before
+        the app is launched
+    -->
+        <meta-data
+            android:name="com.dji.sdk.API_KEY"
+            android:value="92d24534f178a85f815da580" />
+
+        <service android:name="dji.sdk.sdkmanager.DJIGlobalService" />
+        <service android:name="dji.internal.geofeature.flyforbid.FlyforbidUpdateService" />
+
+        <!-- Required for receiving GEO system pushing. -->
+        <service android:name="dji.sdk.sdkmanager.GeoSyncFileService" />
+
+
+
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"

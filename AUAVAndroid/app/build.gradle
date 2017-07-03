@@ -1,16 +1,16 @@
 apply plugin: 'com.android.application'
 def AUAVHOME = "/Users/shiqizhang/reroutlab.cstewart.code.auav"
 android {
-    compileSdkVersion 26
-    buildToolsVersion "26.0.0"
+    compileSdkVersion 26 //26
+    buildToolsVersion "26.0.0" //26
     defaultConfig {
         applicationId "org.reroutlab.code.auav.kernels.auavandroid"
-        minSdkVersion 23
-        targetSdkVersion 26
+        minSdkVersion 23 //23
+        targetSdkVersion 26 //26
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        multiDexEnabled false
+        multiDexEnabled true
         jackOptions {
             enabled true
         }
@@ -66,7 +66,9 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     compile 'com.android.support:appcompat-v7:26.+'
+    //compile 'com.android.support:appcompat-v7:26.+'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.android.support:design:26.+'
+    //compile 'com.android.support:design:26.+'
     testCompile 'junit:junit:4.12'
 }

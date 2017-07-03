@@ -1,6 +1,7 @@
 package org.reroutlab.code.auav.kernels.auavandroid;
 
 import android.app.Application;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -17,11 +18,11 @@ import dji.sdk.sdkmanager.DJISDKManager;
 
 public class App extends Application {
 
-   // public static final String FLAG_CONNECTION_CHANGE = "fpv_tutorial_connection_change";
+    public static final String FLAG_CONNECTION_CHANGE = "fpv_tutorial_connection_change";
 
     private static DJIBaseProduct mProduct;
 
-   // public Handler mHandler;
+    public Handler mHandler;
 
     /**
      * This function is used to get the instance of DJIBaseProduct.
@@ -31,7 +32,16 @@ public class App extends Application {
         if (null == mProduct) {
             mProduct = DJISDKManager.getInstance().getDJIProduct();
         }
+
         return mProduct;
+    }
+
+    public static boolean isAircraftConnected() {
+        return getProductInstance() != null && getProductInstance() instanceof DJIAircraft;
+    }
+
+    public static boolean isHandHeldConnected() {
+        return getProductInstance() != null && getProductInstance() instanceof DJIHandHeld;
     }
 
     public static synchronized DJICamera getCameraInstance() {
@@ -40,12 +50,12 @@ public class App extends Application {
 
         DJICamera camera = null;
 
-     /*   if (getProductInstance() instanceof Aircraft){
-            camera = ((Aircraft) getProductInstance()).getCamera();
+       if (getProductInstance() instanceof DJIAircraft){
+            camera = ((DJIAircraft) getProductInstance()).getCamera();
 
-        } else if (getProductInstance() instanceof HandHeld) {
-            camera = ((HandHeld) getProductInstance()).getCamera();
-        } */
+        } else if (getProductInstance() instanceof DJIHandHeld) {
+            camera = ((DJIHandHeld) getProductInstance()).getCamera();
+        }
 
         return camera;
     }
@@ -53,12 +63,14 @@ public class App extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        mHandler = new Handler(Looper.getMainLooper());
         //This is used to start SDK services and initiate SDK.
         DJISDKManager.getInstance().registerApp();
+        System.out.print("Get this line here!!!!!!! 233333333333");
     }
 
     /**
-     * When starting SDK services, an instance of interface DJISDKManager.DJISDKManagerCallback will be used to listen to 
+     * When starting SDK services, an instance of interface DJISDKManager.DJISDKManagerCallback will be used to listen to
      * the SDK Registration result and the product changing.
      */
     private DJISDKManager.DJISDKManagerCallback mDJISDKManagerCallback = new DJISDKManager.DJISDKManagerCallback() {
@@ -74,6 +86,7 @@ public class App extends Application {
                     @Override
                     public void run() {
                         Toast.makeText(getApplicationContext(), "Register Success", Toast.LENGTH_LONG).show();
+                        System.out.print("Register Success");
                     }
                 });
 
@@ -87,6 +100,7 @@ public class App extends Application {
                     @Override
                     public void run() {
                         Toast.makeText(getApplicationContext(), "Register sdk fails, check network is available", Toast.LENGTH_LONG).show();
+                        System.out.print("Register Failure");
                     }
                 });
 
@@ -103,7 +117,7 @@ public class App extends Application {
                 mProduct.setDJIBaseProductListener(mDJIBaseProductListener);
             }
 
-         //   notifyStatusChange();
+            notifyStatusChange();
         }
     };
 
@@ -115,13 +129,13 @@ public class App extends Application {
             if(newComponent != null) {
                 newComponent.setDJIComponentListener(mDJIComponentListener);
             }
-         //   notifyStatusChange();
+            notifyStatusChange();
         }
 
         @Override
         public void onProductConnectivityChanged(boolean isConnected) {
 
-         //   notifyStatusChange();
+            notifyStatusChange();
         }
 
     };
@@ -130,9 +144,23 @@ public class App extends Application {
 
         @Override
         public void onComponentConnectivityChanged(boolean isConnected) {
-       //     notifyStatusChange();
+            notifyStatusChange();
         }
 
+    };
+
+    private void notifyStatusChange() {
+        mHandler.removeCallbacks(updateRunnable);
+        mHandler.postDelayed(updateRunnable, 500);
+    }
+
+    private Runnable updateRunnable = new Runnable() {
+
+        @Override
+        public void run() {
+            Intent intent = new Intent(FLAG_CONNECTION_CHANGE);
+            sendBroadcast(intent);
+        }
     };
 
 
