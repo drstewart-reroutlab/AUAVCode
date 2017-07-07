@@ -22,18 +22,6 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 
-import dji.common.error.DJIError;
-import dji.common.gimbal.DJIGimbalSpeedRotation;
-import dji.common.gimbal.DJIGimbalRotateDirection;
-import dji.common.util.DJICommonCallbacks;
-import dji.common.error.DJISDKError;
-import dji.sdk.base.DJIBaseComponent;
-import dji.sdk.base.DJIBaseProduct;
-import dji.sdk.camera.DJICamera;
-import dji.sdk.products.DJIAircraft;
-import dji.sdk.products.DJIHandHeld;
-import dji.sdk.sdkmanager.DJIBluetoothProductConnector;
-import dji.sdk.sdkmanager.DJISDKManager;
 
 
 import java.util.Timer;
@@ -87,13 +75,6 @@ public class MainActivity extends AppCompatActivity {
                 }
                 , 0);
 
-        DJIBaseProduct a=App.getProductInstance();
-
-        if(a==null) Log.v(TAG,"Get Null object");
-
-        DJICamera b=App.getCameraInstance();
-
-        if(b==null) Log.v(TAG,"Get Null camera");
 
         Thread t = new Thread() {
             public void run() {

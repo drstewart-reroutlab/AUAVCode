@@ -5,19 +5,13 @@ android {
     buildToolsVersion "26.0.0" //26
     defaultConfig {
         applicationId "org.reroutlab.code.auav.kernels.auavandroid"
-        minSdkVersion 23 //23
+        minSdkVersion 19 //23
         targetSdkVersion 26 //26
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
-        jackOptions {
-            enabled true
-        }
-    }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        multiDexKeepFile file("multidex-config.txt")
     }
     buildTypes {
         release {
@@ -55,10 +49,10 @@ dependencies {
     compile files("$AUAVHOME/libs/interfaces.jar")
     compile files("$AUAVHOME/external/californium-core-1.1.0-SNAPSHOT.jar")
     compile files("$AUAVHOME/external/element-connector-1.1.0-SNAPSHOT.jar")
-    compile files("$AUAVHOME/external/dji-sdk.jar")
+    //compile files("$AUAVHOME/external/dji-sdk.jar")
     compile project(':dJISDKLIB')
-    apk files("$AUAVHOME/external/dji-eventbus.jar")
-    apk files("$AUAVHOME/external/dji-gson.jar")
+    //apk files("$AUAVHOME/external/dji-eventbus.jar")
+    //apk files("$AUAVHOME/external/dji-gson.jar")
     //compile fileTree(dir: "$AUAVHOME/external/", include: ['*.jar'])//uncomment
     apk fileTree(dir: "$AUAVHOME/apps/", include: ['*.jar'])
 
@@ -66,9 +60,10 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     compile 'com.android.support:appcompat-v7:26.+'
+    compile 'com.android.support:multidex:1.0.1'
     //compile 'com.android.support:appcompat-v7:26.+'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.android.support:design:26.+'
     //compile 'com.android.support:design:26.+'
-    testCompile 'junit:junit:4.12'
+    //testCompile 'junit:junit:4.12'
 }
