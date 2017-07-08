@@ -22,23 +22,14 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 
-
-
-import java.util.Timer;
-import java.util.TimerTask;
+import dji.sdk.base.BaseProduct;
 
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "AUAVAndroid";
     Level AUAVLEVEL = Level.ALL;
 
-/*    private DJIGimbalSpeedRotation mPitchSpeedRotation;
-    private DJIGimbalSpeedRotation mRollSpeedRotation;
-    private DJIGimbalSpeedRotation mYawSpeedRotation;
-    private Timer mTimer;
-    private GimbalRotateTimerTask mGimbalRotationTimerTask; */
-
-
+    private static BaseProduct product;
 
     HashMap n2p = new HashMap<String, String>();
     AuavDrivers[] ad = new AuavDrivers[128];
@@ -75,7 +66,12 @@ public class MainActivity extends AppCompatActivity {
                 }
                 , 0);
 
-
+       BaseProduct a=App.getProductInstance();
+        if(a!=null){
+            Log.v(TAG,"Helloooo");
+        }else{
+            Log.v(TAG,"Goodbyeeeeee");
+        }
         Thread t = new Thread() {
             public void run() {
                 String jarList = "";
