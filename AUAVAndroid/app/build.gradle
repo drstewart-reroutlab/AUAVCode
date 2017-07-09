@@ -1,5 +1,5 @@
 apply plugin: 'com.android.application'
-def AUAVHOME = "/Users/shiqizhang/reroutlab.cstewart.code.auav"
+def AUAVHOME = "/home/cstewart/reroutlab.code/reroutlab.cstewart.code.auav/"
 android {
     compileSdkVersion 26 //26
     buildToolsVersion "26.0.0" //26
@@ -51,8 +51,8 @@ dependencies {
     compile files("$AUAVHOME/external/element-connector-1.1.0-SNAPSHOT.jar")
     //compile files("$AUAVHOME/external/dji-sdk.jar")
     compile project(':dJISDKLIB')
-    //apk files("$AUAVHOME/external/dji-eventbus.jar")
-    //apk files("$AUAVHOME/external/dji-gson.jar")
+    //compile files("$AUAVHOME/external/dji-eventbus.jar")
+    //compile files("$AUAVHOME/external/dji-gson.jar")
     //compile fileTree(dir: "$AUAVHOME/external/", include: ['*.jar'])//uncomment
     apk fileTree(dir: "$AUAVHOME/apps/", include: ['*.jar'])
 

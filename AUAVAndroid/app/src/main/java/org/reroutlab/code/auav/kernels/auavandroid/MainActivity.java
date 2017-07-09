@@ -22,14 +22,20 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 
+import dji.common.error.DJIError;
+import dji.common.error.DJISDKError;
+import dji.log.DJILog;
+import dji.sdk.base.BaseComponent;
 import dji.sdk.base.BaseProduct;
-
+import dji.sdk.products.Aircraft;
+import dji.sdk.products.HandHeld;
+import dji.sdk.sdkmanager.BluetoothProductConnector;
+import dji.sdk.sdkmanager.DJISDKManager;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "AUAVAndroid";
     Level AUAVLEVEL = Level.ALL;
 
-    private static BaseProduct product;
 
     HashMap n2p = new HashMap<String, String>();
     AuavDrivers[] ad = new AuavDrivers[128];
@@ -52,11 +58,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
-        ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.INTERNET}, 0);
-        ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.VIBRATE,
+                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.INTERNET,Manifest.permission.VIBRATE,
                         Manifest.permission.ACCESS_WIFI_STATE,
                         Manifest.permission.WAKE_LOCK, Manifest.permission.ACCESS_COARSE_LOCATION,
                         Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.ACCESS_FINE_LOCATION,
@@ -64,63 +67,13 @@ public class MainActivity extends AppCompatActivity {
                         Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.SYSTEM_ALERT_WINDOW,
                         Manifest.permission.READ_PHONE_STATE,
                 }
-                , 0);
+                , 1);
 
-       BaseProduct a=App.getProductInstance();
-        if(a!=null){
-            Log.v(TAG,"Helloooo");
-        }else{
-            Log.v(TAG,"Goodbyeeeeee");
-        }
-        Thread t = new Thread() {
-            public void run() {
-                String jarList = "";
-                try {
-                    InputStream is = getAssets().open("jarList");
-                    BufferedReader br = new BufferedReader(new InputStreamReader(is));
-                    jarList = br.readLine();
-                    br.close();
-                } catch (Exception e) {
-                    Log.v(TAG, e.toString());
-                }
+        DJISDKManager.getInstance().registerApp(this, mDJISDKManagerCallback);
+        DJISDKManager.getInstance();
+        DJISDKManager.getInstance().getProduct();
 
-                String[] fullPath = jarList.split(".jar:");
-                String[] jarNames = new String[fullPath.length];
-                int countDrivers = 0;
-                for (int x = 0; x < fullPath.length; x++) {
-                    String[] seps = fullPath[x].split("/");
-                    if (seps[seps.length - 1].endsWith("Driver") == true) {
-                        jarNames[countDrivers] = seps[seps.length - 1];
-                        countDrivers++;
-                    }
-                }
 
-                for (int x = 0; x < countDrivers; x++) {
-                    System.out.println("Jar: " + jarNames[x]);
-                    ad[x] = instantiate(jarNames[x], org.reroutlab.code.auav.drivers.AuavDrivers.class);
-                    n2p.put(ad[x].getClass().getCanonicalName(),
-                            new String("Port:" + ad[x].getLocalPort() + "\n"));
-                }
-
-                // Printing the map object locally for logging
-                String mapAsString = "Active Drivers\n";
-                Set keys = n2p.keySet();
-                for (Iterator i = keys.iterator(); i.hasNext(); ) {
-                    String name = (String) i.next();
-                    String value = (String) n2p.get(name);
-                    mapAsString = mapAsString + name + " --> " + value + "\n";
-                }
-                Log.v(TAG, mapAsString);
-
-                for (int x = 0; x < countDrivers; x++) {
-                    // Send the map back to each object
-                    ad[x].setDriverMap(n2p);
-                    ad[x].setLogLevel(AUAVLEVEL);
-                    ad[x].getCoapServer().start();
-                }
-            }
-        };
-        t.start();
 
     }
 
@@ -158,5 +111,83 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-}
+    private DJISDKManager.SDKManagerCallback mDJISDKManagerCallback = new DJISDKManager.SDKManagerCallback() {
 
+
+        @Override
+        public void onRegister(DJIError error) {
+            if (error == DJISDKError.REGISTRATION_SUCCESS) {
+                DJILog.e("App registration", DJISDKError.REGISTRATION_SUCCESS.getDescription());
+                DJISDKManager.getInstance().startConnectionToProduct();
+            } else {
+            }
+            Log.v(TAG, "Registration description was " +error.getDescription());
+
+
+        }
+
+        @Override
+        public void onProductChange(BaseProduct oldProduct, BaseProduct newProduct) {
+
+            Log.d(TAG, String.format("onProductChanged oldProduct:%s, newProduct:%s", oldProduct, newProduct));
+            if (newProduct != null) {
+                Thread t = new Thread() {
+                    public void run() {
+                        String jarList = "";
+                        try {
+                            InputStream is = getAssets().open("jarList");
+                            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+                            jarList = br.readLine();
+                            br.close();
+                        } catch (Exception e) {
+                            Log.v(TAG, e.toString());
+                        }
+
+                        String[] fullPath = jarList.split(".jar:");
+                        String[] jarNames = new String[fullPath.length];
+                        int countDrivers = 0;
+                        for (int x = 0; x < fullPath.length; x++) {
+                            String[] seps = fullPath[x].split("/");
+                            if (seps[seps.length - 1].endsWith("Driver") == true) {
+                                jarNames[countDrivers] = seps[seps.length - 1];
+                                countDrivers++;
+                            }
+                        }
+
+                        for (int x = 0; x < countDrivers; x++) {
+                            System.out.println("Jar: " + jarNames[x]);
+                            ad[x] = instantiate(jarNames[x], org.reroutlab.code.auav.drivers.AuavDrivers.class);
+                            n2p.put(ad[x].getClass().getCanonicalName(),
+                                    new String("Port:" + ad[x].getLocalPort() + "\n"));
+                        }
+
+                        // Printing the map object locally for logging
+                        String mapAsString = "Active Drivers\n";
+                        Set keys = n2p.keySet();
+                        for (Iterator i = keys.iterator(); i.hasNext(); ) {
+                            String name = (String) i.next();
+                            String value = (String) n2p.get(name);
+                            mapAsString = mapAsString + name + " --> " + value + "\n";
+                        }
+                        Log.v(TAG, mapAsString);
+
+                        for (int x = 0; x < countDrivers; x++) {
+                            // Send the map back to each object
+                            ad[x].setDriverMap(n2p);
+                            ad[x].setLogLevel(AUAVLEVEL);
+                            ad[x].getCoapServer().start();
+                        }
+                    }
+                };
+                t.start();
+
+
+            }
+            else {
+                Log.w("onProduct note","Connect returns" +DJISDKManager.getInstance().startConnectionToProduct());
+            }
+
+        }
+    };
+
+}

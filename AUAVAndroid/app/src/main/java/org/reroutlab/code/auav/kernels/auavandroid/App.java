@@ -63,8 +63,6 @@ public class App extends AppCompatActivity {
         Log.v(TAG,"I am in onCreate");
         mHandler = new Handler(Looper.getMainLooper());
         //This is used to start SDK services and initiate SDK.
-        DJISDKManager.getInstance().registerApp(this, mDJISDKManagerCallback);
-        if(DJISDKManager.getInstance()!=null) Log.v(TAG,"Get instance");
 
         /*int permissionCheck = ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_PHONE_STATE);
         if (permissionCheck == 0 || Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
