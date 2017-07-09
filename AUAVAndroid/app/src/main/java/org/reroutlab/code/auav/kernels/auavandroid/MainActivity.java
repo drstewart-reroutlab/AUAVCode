@@ -184,6 +184,12 @@ public class MainActivity extends AppCompatActivity {
 
             }
             else {
+                try {
+                    Thread.sleep(10000);
+                }
+                catch(Exception e) {
+
+                }
                 Log.w("onProduct note","Connect returns" +DJISDKManager.getInstance().startConnectionToProduct());
             }
 
