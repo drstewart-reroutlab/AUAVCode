@@ -23,15 +23,15 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import dji.common.error.DJIError;
-import dji.common.gimbal.DJIGimbalSpeedRotation;
-import dji.common.gimbal.DJIGimbalRotateDirection;
-import dji.common.util.DJICommonCallbacks;
+import dji.common.gimbal.Rotation;
+import dji.common.gimbal.RotationMode;
+import dji.common.gimbal.GimbalMode;
+
+import dji.common.util.CommonCallbacks;
 import dji.common.error.DJISDKError;
-import dji.sdk.base.DJIBaseComponent;
-import dji.sdk.base.DJIBaseProduct;
-import dji.sdk.products.DJIAircraft;
-import dji.sdk.products.DJIHandHeld;
-import dji.sdk.sdkmanager.DJIBluetoothProductConnector;
+import dji.sdk.base.BaseComponent;
+import dji.sdk.base.BaseProduct;
+import dji.sdk.products.Aircraft;
 import dji.sdk.sdkmanager.DJISDKManager;
 
 
@@ -48,11 +48,12 @@ import dji.sdk.sdkmanager.DJISDKManager;
 
 public class DroneGimbalDriver implements org.reroutlab.code.auav.drivers.AuavDrivers { //implements???
 		
-		private DJIGimbalSpeedRotation mPitchSpeedRotation;
-		private DJIGimbalSpeedRotation mRollSpeedRotation;
-		private DJIGimbalSpeedRotation mYawSpeedRotation;
+		private String LOG_TAG="DroneGimbalDriver ";
+
 		private Timer mTimer;
 		private GimbalRotateTimerTask mGimbalRotationTimerTask;
+	
+
 	
 		private CoapServer cs;
 		public CoapServer getCoapServer() {
@@ -158,26 +159,33 @@ public class DroneGimbalDriver implements org.reroutlab.code.auav.drivers.AuavDr
 								ce.respond(getUsageInfo());
 						}
 						else if (args[0].equals("dc=move")) {
-								String[] kv1= args[1].split("=");
-								String[] kv2= args[2].split("=");
-								String[] kv3= args[3].split("=");								
-								mPitchSpeedRotation = new DJIGimbalSpeedRotation(Float.parseFloat(kv1[1]),
-																																 DJIGimbalRotateDirection.Clockwise);
-								mRollSpeedRotation = new DJIGimbalSpeedRotation(Float.parseFloat(kv2[1]),
-																																DJIGimbalRotateDirection.Clockwise);
-								mYawSpeedRotation = new DJIGimbalSpeedRotation(Float.parseFloat(kv3[1]),
-																															 DJIGimbalRotateDirection.Clockwise);
-								
+								System.out.println(LOG_TAG+ " Moving Gimbal");
+								Aircraft aircraft = (Aircraft)DJISDKManager.getInstance().getProduct();
+								if(aircraft.getGimbal()!=null){
+
+
+
+								aircraft.getGimbal().startCalibration(new CommonCallbacks.CompletionCallback() {
+																														    @Override
+																													  	    public void onResult(DJIError djiError) {
+																															 if (djiError == null) {
+																																	 System.out.println(LOG_TAG+"Move success");
+																															 }
+																															 else {
+																																	 System.out.println(LOG_TAG+djiError.getDescription());
+																															 }
+																													 			}
+																														   }
+																														 );
+
+
+
 								long t = System.currentTimeMillis();
-								long end = t + 3000;
+								long end = t + 1000;
 								while (System.currentTimeMillis() < end) {
 										if (mTimer == null) {
 												mTimer = new Timer();
-												mPitchSpeedRotation = new DJIGimbalSpeedRotation(10,
-																																				 DJIGimbalRotateDirection.Clockwise);
-												mGimbalRotationTimerTask = new GimbalRotateTimerTask(mPitchSpeedRotation,
-																																						 mRollSpeedRotation,
-																																						 mYawSpeedRotation);
+												mGimbalRotationTimerTask = new GimbalRotateTimerTask((float)7);
 												mTimer.schedule(mGimbalRotationTimerTask, 0, 100);
 										}
 								}
@@ -189,70 +197,53 @@ public class DroneGimbalDriver implements org.reroutlab.code.auav.drivers.AuavDr
 										mGimbalRotationTimerTask = null;
 										mTimer = null;
 								}
-								
 
-								ce.respond ("Gimbal=Moved");
+								
+								ce.respond ("Move Gimbal Complete");}
+
+							else{
+
+									ce.respond ("No Gimbal");
+
+
+								}
 						}
 						else {
-								ce.respond("Error: DroneGimbalDriver unknown command\n");
+								ce.respond("Error: DroneGimmbal unknown command\n");
 						}
 			}	
-		}	
-
-    		private static class GimbalRotateTimerTask extends TimerTask {
-				DJIGimbalSpeedRotation mPitch;
-				DJIGimbalSpeedRotation mRoll;
-				DJIGimbalSpeedRotation mYaw;
-				
-				GimbalRotateTimerTask(DJIGimbalSpeedRotation pitch, DJIGimbalSpeedRotation roll, DJIGimbalSpeedRotation yaw) {
-
-						super();
-						this.mPitch = pitch;
-						this.mRoll = roll;
-						this.mYaw = yaw;
-				}
-				
-				@Override
-				public void run() {
-
-
-					
-
-				try{
-					//DJISDKManager.getInstance().registerApp();
-					//System.out.println("Register successful");
-
-					if(DJISDKManager.getInstance()==null){
-						System.out.println("GetInstance");}
-
-					else if(DJISDKManager.getInstance().getDJIProduct()==null){
-						System.out.println("GetDJIProduct");
-
-					//	dgdLogger.log(Level.FINEST, "getDJIProduct");
-
-					}						
-					if (DJISDKManager.getInstance().getDJIProduct().getGimbal() != null) {
-						DJISDKManager.getInstance().getDJIProduct().
-							getGimbal().rotateGimbalBySpeed(mPitch,	mRoll, mYaw,
-									new DJICommonCallbacks.DJICompletionCallback() {
-										@Override
-										public void onResult(DJIError error) {
-																														
-										}
-								});
-
-								//using if-else statement to find which part lead to null
-						}
-				}catch(Exception e){
-					
-					dgdLogger.log(Level.WARNING, "Can't connect" + e.getStackTrace().toString());
-					dgdLogger.log(Level.WARNING, e.toString());
-
-
-
-				}
-				}
 		}
-		
+	private static class GimbalRotateTimerTask extends TimerTask {
+        float pitchValue;
+
+        GimbalRotateTimerTask(float pitchValue) {
+            super();
+            this.pitchValue = pitchValue;
+        }
+
+        @Override
+        public void run() {
+                    DJISDKManager.getInstance().getProduct().getGimbal().
+                    rotate(new Rotation.Builder().pitch(pitchValue)
+                                                 .mode(RotationMode.SPEED)
+                                                 .yaw(Rotation.NO_ROTATION)
+                                                 .roll(Rotation.NO_ROTATION)
+                                                 .time(1)
+                                                 .build(), new CommonCallbacks.CompletionCallback() {
+
+                       					 @Override
+																													 public void onResult(DJIError djiError) {
+																															 if (djiError == null) {
+																																	 System.out.println("Move success");
+																															 }
+																															 else {
+																																	 System.out.println(djiError.getDescription());
+																															 }
+																													 }
+						 });
+            }
+    }	
+
+    				
 		
 }
