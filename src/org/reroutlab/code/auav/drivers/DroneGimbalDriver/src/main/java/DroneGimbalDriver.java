@@ -228,7 +228,7 @@ public class DroneGimbalDriver implements org.reroutlab.code.auav.drivers.AuavDr
                                                  .mode(RotationMode.SPEED)
                                                  .yaw(Rotation.NO_ROTATION)
                                                  .roll(Rotation.NO_ROTATION)
-                                                 .time(1)
+                                                 .time(0)
                                                  .build(), new CommonCallbacks.CompletionCallback() {
 
                        					 @Override
