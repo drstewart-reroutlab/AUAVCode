@@ -155,9 +155,11 @@ public class ExternalCommandsDriver implements org.reroutlab.code.auav.drivers.A
 						ecdLogger.log(Level.WARNING, "Send the cmd: " + inputLine );									 
 						String driverName = args[0].substring(args[0].indexOf("=")+1,args[0].length());
 						driverName = driverName.trim();//Returns a copy of the string, with leading and trailing whitespace omitted
-						// Format: dn=driver_name dc=driver_cmd [driver_prm=driver_arg]*
+						if (driverName.equals("fly")) {driverName="org.reroutlab.code.auav.drivers.FlyDroneDriver";}
+						if (driverName.equals("gim")) {driverName="org.reroutlab.code.auav.drivers.DroneGimbalDriver";}
+						if (driverName.equals("cam")) {driverName="org.reroutlab.code.auav.drivers.DroneCameraDriver";}	
 
-
+						
 						//print out all activated drivers if args[0]==list
 						if (driverName.endsWith("list")) {
 								String output = "";
