@@ -1,0 +1,18 @@
+apply plugin: 'java'
+jar.baseName = 'org.reroutlab.code.auav.routines.BasicRoutine'
+def AUAVHOME = System.getenv('AUAVHOME')
+
+repositories {
+   flatDir {
+              dirs "$AUAVHOME/libs"
+   }
+   flatDir {
+              dirs "$AUAVHOME/external"
+   }
+}
+
+dependencies {
+   compile files("$AUAVHOME/libs/interfaces.jar")
+   compile fileTree(dir: "$AUAVHOME/external/", include: ['*.jar'])
+   compile fileTree(dir: ".", include: ['*.jar'])       
+}

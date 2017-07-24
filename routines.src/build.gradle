@@ -1,0 +1,9 @@
+apply plugin: 'base'
+
+
+task installJars(type: Copy) {
+	dependsOn assemble
+  from subprojects.collect { it.tasks.withType(Jar) }
+  into "../routines"
+}
+

@@ -1,5 +1,6 @@
 package org.reroutlab.code.auav.kernels.auavandroid;
 
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -32,6 +33,7 @@ import dji.sdk.products.HandHeld;
 import dji.sdk.sdkmanager.BluetoothProductConnector;
 import dji.sdk.sdkmanager.DJISDKManager;
 
+
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "AUAVAndroid";
     Level AUAVLEVEL = Level.ALL;
@@ -39,6 +41,19 @@ public class MainActivity extends AppCompatActivity {
 
     HashMap n2p = new HashMap<String, String>();
     AuavDrivers[] ad = new AuavDrivers[128];
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        boolean b = true;
+        for (int x = 0; x < grantResults.length; x++) {
+            if (grantResults[x] != PackageManager.PERMISSION_GRANTED) {
+                b = false;
+            }
+        }
+        if (b == true) {
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
 
         ActivityCompat.requestPermissions(this,
                 new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        Manifest.permission.INTERNET,Manifest.permission.VIBRATE,
+                        Manifest.permission.INTERNET, Manifest.permission.VIBRATE,
                         Manifest.permission.ACCESS_WIFI_STATE,
                         Manifest.permission.WAKE_LOCK, Manifest.permission.ACCESS_COARSE_LOCATION,
                         Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.ACCESS_FINE_LOCATION,
@@ -71,6 +86,15 @@ public class MainActivity extends AppCompatActivity {
                 , 1);
 
         DJISDKManager.getInstance().registerApp(this, mDJISDKManagerCallback);
+
+        while (DJISDKManager.getInstance().hasSDKRegistered() == false) {
+            try {
+                Thread.sleep(10000);
+            } catch (Exception e) {
+            }
+            DJISDKManager.getInstance().registerApp(this, mDJISDKManagerCallback);
+        }
+
 
     }
 
@@ -132,9 +156,12 @@ public class MainActivity extends AppCompatActivity {
                     public void run() {
                         String jarList = "";
                         try {
+                            String line = "";
                             InputStream is = getAssets().open("jarList");
                             BufferedReader br = new BufferedReader(new InputStreamReader(is));
-                            jarList = br.readLine();
+                            while ((line = br.readLine()) != null) {
+                                jarList = jarList + ":" + line.trim();
+                            }
                             br.close();
                         } catch (Exception e) {
                             Log.v(TAG, e.toString());
@@ -155,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
                             System.out.println("Jar: " + jarNames[x]);
                             ad[x] = instantiate(jarNames[x], org.reroutlab.code.auav.drivers.AuavDrivers.class);
                             n2p.put(ad[x].getClass().getCanonicalName(),
-                                    new String("Port:" + ad[x].getLocalPort() + "\n"));
+                                    new String("" + ad[x].getLocalPort() + "\n"));
                         }
 
                         // Printing the map object locally for logging

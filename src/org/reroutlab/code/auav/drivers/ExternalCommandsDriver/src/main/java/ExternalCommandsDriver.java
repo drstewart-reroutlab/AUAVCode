@@ -16,6 +16,7 @@ import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.EndpointManager;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.server.resources.CoapExchange;
+import org.reroutlab.code.auav.routines.AuavRoutines;
 
 /**
  * org.reroutlab.code.auav.drivers.ExternalCommandsDriver is an AUAV service.
@@ -144,6 +145,11 @@ public class ExternalCommandsDriver implements org.reroutlab.code.auav.drivers.A
 						String inputLine = "";
 						try {
 								inputLine  = new String(payload, "UTF-8");//UTF-8 is a character encoding capable of encoding all possible characters, or code points, defined by Unicode
+								inputLine.replaceAll("=fly-","=org.reroutlab.code.auav.drivers.FlyDroneDriver-");
+								inputLine.replaceAll("=gim-","=org.reroutlab.code.auav.drivers.DroneGimbalDriver-");
+								inputLine.replaceAll("=cam-","=org.reroutlab.code.auav.drivers.DroneCameraDriver-");
+								inputLine.replaceAll("=bsr-","=org.reroutlab.code.auav.routines.BasicRoutine-");
+
 						}
 						catch ( Exception uee) {
 								System.out.println(uee.getMessage());
@@ -155,13 +161,10 @@ public class ExternalCommandsDriver implements org.reroutlab.code.auav.drivers.A
 						ecdLogger.log(Level.WARNING, "Send the cmd: " + inputLine );									 
 						String driverName = args[0].substring(args[0].indexOf("=")+1,args[0].length());
 						driverName = driverName.trim();//Returns a copy of the string, with leading and trailing whitespace omitted
-						if (driverName.equals("fly")) {driverName="org.reroutlab.code.auav.drivers.FlyDroneDriver";}
-						if (driverName.equals("gim")) {driverName="org.reroutlab.code.auav.drivers.DroneGimbalDriver";}
-						if (driverName.equals("cam")) {driverName="org.reroutlab.code.auav.drivers.DroneCameraDriver";}	
 
 						
 						//print out all activated drivers if args[0]==list
-						if (driverName.endsWith("list")) {
+						if (driverName.equals("list")) {
 								String output = "";
 								if (driver2port != null) {
 										Set keys = driver2port.keySet(); //HashMap<port, usageInfo>
@@ -171,9 +174,34 @@ public class ExternalCommandsDriver implements org.reroutlab.code.auav.drivers.A
 												output = output + name + "-->" + value + "\n";
 										}
 								}
-								outLine = outLine + "Active Drivers\n"+output;
+								outLine = output;
 								ce.respond(outLine);
 						}
+						else if (driverName.equals("rtn")) {
+								String routineCMD = args[1].substring(args[1].indexOf("=")+1,args[1].length());								
+								String routineName = args[2].substring(args[2].indexOf("=")+1,args[2].length());
+								org.reroutlab.code.auav.routines.AuavRoutines ar = null;
+								try {
+										ar=(org.reroutlab.code.auav.routines.AuavRoutines)(Class.forName(routineName).newInstance());
+								}
+								catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+										System.out.println("AUAV Drivers: External Command can not instantiate class");
+								}
+								if (ar == null) {
+										System.out.println("AUAV Drivers: External Command can not instantiate routine");
+								}
+								else if (routineCMD.equals("start")) {
+										outLine = ar.startRoutine();
+								}
+								else if (routineCMD.equals("stop")) {
+										outLine = ar.stopRoutine();
+								}
+								else {
+										outLine = "Routines currently support start/stop only";
+								}
+								
+								ce.respond(outLine);
+						}						
 						else if (driver2port.containsKey(driverName) )  {
 								String[] tmp_port = ((String)driver2port.get(driverName)).split(":"); //value={port,usageInfo}
 								CoapClient client = new CoapClient("coap://127.0.0.1:"+tmp_port[1].trim()+"/cr"); //create client;with usageInfo

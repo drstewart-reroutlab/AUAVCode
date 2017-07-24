@@ -165,7 +165,7 @@ public class FlyDroneDriver implements org.reroutlab.code.auav.drivers.AuavDrive
 						if (args[0].equals("dc=help")) {
 								ce.respond(getUsageInfo());
 						}
-						else if (args[0].equals("dc=startTakeoff")) {
+						else if (args[0].equals("dc=lft")) {
 								System.out.println(LOG_TAG+ " Taking Off");
 								Aircraft aircraft = (Aircraft)DJISDKManager.getInstance().getProduct();
 								aircraft.getFlightController().startTakeoff(
@@ -181,15 +181,29 @@ public class FlyDroneDriver implements org.reroutlab.code.auav.drivers.AuavDrive
 																													 }
 																											 }
 																											 );
-								try {
-										Thread.sleep(10000);
-								} catch (InterruptedException ie){
-										Thread.currentThread().interrupt();
-								}
-								
 
 								ce.respond ("startTakeoff Complete");
 						}
+						else if (args[0].equals("dc=lnd")) {
+								System.out.println(LOG_TAG+ " Landing");
+								Aircraft aircraft = (Aircraft)DJISDKManager.getInstance().getProduct();
+								aircraft.getFlightController().startLanding(
+																											 new CommonCallbacks.CompletionCallback() {
+																													 @Override
+																													 public void onResult(DJIError djiError) {
+																															 if (djiError == null) {
+																																	 System.out.println(LOG_TAG+"Landing success");
+																															 }
+																															 else {
+																																	 System.out.println(LOG_TAG+djiError.getDescription());
+																															 }
+																													 }
+																											 }
+																											 );
+
+								ce.respond ("startLanding Complete");
+						}
+
 						else {
 								ce.respond("Error: FlyDroneDriver unknown command\n");
 						}

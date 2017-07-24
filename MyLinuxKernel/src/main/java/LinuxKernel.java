@@ -44,7 +44,7 @@ public class LinuxKernel {
 						System.out.println("Jar: "+jarNames[x]);
 						ad[x] = instantiate(jarNames[x],org.reroutlab.code.auav.drivers.AuavDrivers.class);
 						n2p.put(ad[x].getClass().getCanonicalName(),
-										new String("Port:"+ad[x].getLocalPort()+"\n" ) );						
+										new String(""+ad[x].getLocalPort()+"\n" ) );						
 				}
 
 				// Printing the map object locally for logging
