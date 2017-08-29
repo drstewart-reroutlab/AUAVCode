@@ -23,7 +23,6 @@ public class BasicRoutine extends org.reroutlab.code.auav.routines.AuavRoutines{
 						t.start();
 						return "BasicRoutine Started";
 				}
-
 				return "BasicRoutine not Initialized";
 
 		}
@@ -56,7 +55,8 @@ public class BasicRoutine extends org.reroutlab.code.auav.routines.AuavRoutines{
 								setLock("barrier-1");
 						}};
 				
-				String succ = invokeDriver("org.reroutlab.code.auav.drivers.FlyDroneDriver", "dc=lft", ch );
+				String
+						succ = invokeDriver("org.reroutlab.code.auav.drivers.FlyDroneDriver", "dc=lft", ch );
 				spin();
 				setLock("Free");
 				succ = invokeDriver("org.reroutlab.code.auav.drivers.DroneGimbalDriver", "dc=cal", ch );				
